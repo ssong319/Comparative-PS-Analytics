@@ -24,3 +24,4 @@ selected_topics["3.0.Gini"] = {name: "Gini Coefficient", sourceNote: "sourceNote
 
 selected_topics["IC.BUS.EASE.XQ"] = {name: "Ease of doing business index (1=most business-friendly regulations)", sourceNote: "Ease of doing business ranks economies from 1 to 189, with first place being the best. A high ranking (a low numerical rank) means that the regulatory environment is conducive to business operation. The index averages the country's percentile rankings on 10 topics covered in the World Bank's Doing Business. The ranking on each topic is the simple average of the percentile rankings on its component indicators."}
 
+#Estimate   Estimate of governance (ranges from approximately -2.5 (weak) to 2.5 (strong) governance performance)                               
