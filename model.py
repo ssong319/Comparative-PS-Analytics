@@ -20,12 +20,13 @@ class Indicators(db.Model):
     polity = db.Column(db.Integer, nullable=True)
     gdp_per_cap = db.Column(db.Integer, nullable=True, default=None)
     eodb = db.Column(db.Integer, nullable=True, default=None)
-    pols = db.Column(db.Numeric, nullable=True, default=None)
+    pol_stability = db.Column(db.Numeric, nullable=True, default=None)
     unemployment = db.Column(db.Integer, nullable=True, default=None)
-    country = db.relationship('Country', backref=db.backref("indicators", order_by=year))
+    #ordering by descending order makes it easier to find the most recent values for each metric later on
+    country = db.relationship('Country', backref=db.backref("indicators", order_by="desc(Indicators.year)"))
 
     def __repr__(self):
-        return "<Indicators indicator_id=%s country_name=%s year=%s polity=%s eodb=%s pols=%s gdp_per_cap=%s unemployment=%s> \n" % (self.indicator_id, self.country_name, self.year, self.polity, self.eodb, self.pols, self.gdp_per_cap, self.unemployment)
+        return "<Indicators indicator_id=%s country_name=%s year=%s polity=%s eodb=%s pol_stability=%s gdp_per_cap=%s unemployment=%s> \n" % (self.indicator_id, self.country_name, self.year, self.polity, self.eodb, self.pol_stability, self.gdp_per_cap, self.unemployment)
 
 
 ###
