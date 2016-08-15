@@ -100,7 +100,7 @@ def load_ease_of_business():
 
     db.session.commit()
 
-def load_pol_stabiliy():
+def load_pol_stability():
     """loads political stability score to indicators objects
 
     Parses the political stability dataset, fetches the appropriate indicators object and assigns the political stability metric. This is also a time series
@@ -130,14 +130,14 @@ def load_pol_stabiliy():
             if fetch:
                 fetch.pol_stability = value
 
-
+#this funct not working error: ValueError: Unterminated string starting at: line 1 column 1708246 (char 1708245)
 def load_unemployment():
     """loads long-term unemployment metrics to indicators objects
 
     This function submit a get request to the World Bank for long-term unemployment (as percentage of total unemployment) metrics, fetches the corresponding indicators object and assigns the metric. This is a time series
     """
 
-    r = requests.get('http://api.worldbank.org/countries/all/indicators/SL.UEM.LTRM.ZS?format=json&per_page=16848')
+    r = requests.get("http://api.worldbank.org/countries/all/indicators/SL.UEM.LTRM.ZS?format=json&per_page=14784")
 
     unemployment_info = r.json()
 
@@ -167,5 +167,5 @@ if __name__ == "__main__":
     load_country_and_polity()
     load_gdp()
     load_ease_of_business()
-    load_pol_stabiliy()
-    load_unemployment()
+    load_pol_stability()
+    #load_unemployment()

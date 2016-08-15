@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %} Country Profile {% endblock %}
+
+
+
+{% block content %}
+
+
+{% if recent_metrics %}
+
+
+    {% for country in recent_metrics %}
+    <h1> {{ country }} </h1>
+
+        {% for m in recent_metrics[country] %}
+
+        <li> {{ m }} : {{ recent_metrics[country][m][1] }} ( {{ recent_metrics[country][m][0] }} ) </li>
+
+        {% endfor %}
+
+    {% endfor %}
+
+
+{% else %}
+
+<p> Your search returned no results </p>
+
+
+
+{% endif %}
+
+<canvas id="myChart"></canvas>
+<div id="line"></div>
+
+<script>
+var options = {
+      scales : {
+        xAxes : [ {
+            gridLines : {
+                display : false
+            }
+        } ],
+        yAxes : [ {
+            gridLines : {
+                display : false
+            }
+        }]
+    }
+    };
+var ctx = $("#myChart").get(0).getContext("2d");
+
+$.get("/polity-scores.json", function (data) {
+    var polityLineChart = new Chart.Line(ctx, {data: data, options: options});
+    $('#line').html(polityLineChart.generateLegend());
+
+});
+
+// var data = {
+//     labels: ["January", "February", "March", "April", "May", "June", "July"],
+//     datasets: [
+//         {
+//             label: "My First dataset",
+//             fill: false,
+//             lineTension: 0.1,
+//             backgroundColor: "rgba(75,192,192,0.4)",
+//             borderColor: "rgba(75,192,192,1)",
+//             borderCapStyle: 'butt',
+//             borderDash: [],
+//             borderDashOffset: 0.0,
+//             borderJoinStyle: 'miter',
+//             pointBorderColor: "rgba(75,192,192,1)",
+//             pointBackgroundColor: "#fff",
+//             pointBorderWidth: 1,
+//             pointHoverRadius: 5,
+//             pointHoverBackgroundColor: "rgba(75,192,192,1)",
+//             pointHoverBorderColor: "rgba(220,220,220,1)",
+//             pointHoverBorderWidth: 2,
+//             pointRadius: 1,
+//             pointHitRadius: 10,
+//             data: [65, 59, 80, 81, 56, 55, 40],
+//             spanGaps: false,
+//         }
+//     ]
+// };
+
+// var myLineChart = new Chart(ctx, {
+// type: 'line',
+// data: data,
+// options: options
+// });
+
+
+// var g = document.getElementById("line");
+// g.innerHTML = myLineChart.generateLegend();
+
+</script>
+
+
+{% endblock %}
+
