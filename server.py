@@ -27,8 +27,6 @@ def show_profile():
     recent_metrics = {}
 
     #obtain the list of indicator objs for each selected country
-
-    #maybe store this info in a session so we have access at other routes
     if selection_one:
         country_one_indicators = Country.query.get(selection_one.title()).indicators
         session["first_country"] = country_one_indicators[0].country_name
@@ -46,6 +44,7 @@ def show_profile():
 
         #took out unemployment for now - load funct not working
         metrics = ['polity', 'gdp_per_cap', 'eodb', 'pol_stability']
+        metric_description = ['Polity [+10 (full democracy) to -10 (full autocracy)]', 'GDP per capita (current US$)', 'Ease of doing business [1(best) to 189]', 'Political Stability [-2.5(weak) to 2.5(strong)]']
 
         def store_metric(ind_objs, str_metric):
             for i in ind_objs:
@@ -55,7 +54,9 @@ def show_profile():
                 #if the attr_value actually has a value (ie not none), this would be the most recent value since the indicator obj list is sorted in descending order (see model.py).
                 if attr_value:
                     break
-            recent_metrics[country_name][str_metric] = [year, attr_value]
+
+            label = metric_description[metrics.index(str_metric)]
+            recent_metrics[country_name][label] = [year, attr_value]
 
         for m in metrics:
             store_metric(ind_list, m)
@@ -73,28 +74,51 @@ def get_polity_data():
     country2_ind = Country.query.get(session["second_country"]).indicators
 
     years = []
+    #polity data for the first country
     data_c1 = []
+    #polity data for the second country
     data_c2 = []
 
+    #first scenario: country 2 is the longer time series. Then country 2's list needs to be truncated so that there is no years-to-score mismatch on the graph
     if len(country1_ind) < len(country2_ind):
+        #years list will start with the earliest year that both countries have a polity value
         for c in country1_ind:
             years.append(c.year)
-    else:
+            data_c1.append(c.polity)
+
+        #figure out how many more polity scores are in country 2 then truncate it. Since the lists are sorted by most recent year in the front, this list slice assignment will truncate the earliest years for country 2 in which polity scores for country 1 are nonexistent
+        offset = len(country1_ind) - len(country2_ind)
+        country2_ind = country2_ind[:offset]
+
+        for d in country2_ind:
+            data_c2.append(d.polity)
+
+    #scenario: country 1 is the longer time series, same logic as the first
+    elif len(country2_ind) < len(country1_ind):
         for c in country2_ind:
             years.append(c.year)
+            data_c2.append(c.polity)
 
-    for d in country1_ind:
-        #note: consider whether chart js can handle null values
-        data_c1.append(d.polity)
+        offset = len(country2_ind) - len(country1_ind)
+        country1_ind = country1_ind[:offset]
 
-    for p in country2_ind:
-        data_c2.append(p.polity)
+        for d in country1_ind:
+            data_c1.append(d.polity)
 
+    #if both countries have the same length, no truncation needed
+    else:
+        for c in country1_ind:
+            years.append(c.year)
+            data_c1.append(c.polity)
+
+        for d in country2_ind:
+            data_c2.append(d.polity)
+
+
+    #list of objs are sorted by most recent year but we want to start from the earliest year on the graph
     years.reverse()
     data_c1.reverse()
     data_c2.reverse()
-
-    #!!!bug - ex US vs Italy - US starts at 1800 and Italy starts later, Italy's polity score points will be off with the years on the x-axis since you start with the other country. Temporary fix - changed line 79 from > to < to start with the later country.
 
     #polity_data should store scores for both countries, in the datasets key have an array with two dictionaries of polity scores, one per country
     polity_data = {'labels': years, 'datasets': [{
@@ -135,6 +159,23 @@ def get_polity_data():
         }]}
 
     return jsonify(polity_data)
+
+@app.route('/gdp.json')
+def get_gdp_data():
+    """Return gdp per cap data with corresponding year and polity score"""
+#var dataset = [[year, gdp, polity], [year, gdp, polity]...]
+    dataset = []
+    country1_ind = Country.query.get(session["first_country"]).indicators
+
+    for c in country1_ind:
+        year = country1_ind.year
+        gdp_per_cap = country1_ind.gdp_per_cap
+        polity_score = country1_ind.polity
+        dataset.append([year, gdp_per_cap, polity_score])
+
+
+
+
 
 
 if __name__ == "__main__":

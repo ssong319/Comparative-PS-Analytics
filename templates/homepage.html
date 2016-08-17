@@ -2,11 +2,32 @@
 
 {% block title %} Homepage {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+{% endblock %}
+
 {% block content %}
 
 <h1> Select 2 countries <h1>
 
-<form action="/profile">
+<script>
+
+  var all_country_names = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Baden', 'Bahrain', 'Bavaria', 'Belgium', 'Benin', 'Burkina Faso', 'Bhutan', 'Belarus', 'Bangladesh', 'Bolivia', 'Bosnia', 'Botswana', 'Brazil', 'Burundi', 'Bulgaria', 'Cambodia', 'Canada', 'Cameroon', 'Cape Verde', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo Brazzaville', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czechoslovakia', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominican Republic', 'Vietnam North', 'Ecuador', 'Egypt', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Ethiopia', 'East Timor', 'Finland', 'Fiji', 'France', 'Gabon', 'Gambia', 'Gran Colombia', 'Germany East', 'Germany West', 'Ghana', 'Prussia', 'Germany', 'Guinea-Bissau', 'Greece', 'Georgia', 'Guatemala', 'Guinea', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'India', 'Indonesia', 'Ireland', 'Iran', 'Iraq', 'Israel', 'Italy', 'Ivory Coast', 'Jamaica', 'Jordan', 'Japan', 'Kenya', 'Korea', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Kazakhstan', 'Laos', 'Latvia', 'Liberia', 'Lebanon', 'Lesotho', 'Libya', 'Lithuania', 'Luxembourg', 'Mauritania', 'Macedonia', 'Madagascar', 'Malaysia', 'Mauritius', 'Malawi', 'Mexico', 'Moldova', 'Mali', 'Montenegro', 'Modena', 'Mongolia', 'Morocco', 'Myanmar', 'Mozambique', 'Namibia', 'Nepal', 'New Zealand', 'Nicaragua', 'Nigeria', 'Niger', 'Norway', 'Netherlands', 'Orange Free State', 'Oman', 'Pakistan', 'Panama', 'Papal States', 'Paraguay', 'Peru', 'Philippines', 'Parma', 'Papua New Guinea', 'Poland', 'Portugal', 'North Korea', 'Qatar', 'South Korea', 'Romania', 'Russia', 'Vietnam South', 'Rwanda', 'South Africa', 'El Salvador', 'Sardinia', 'Saudi Arabia', 'Saxony', 'Sudan-North', 'Senegal', 'Serbia', 'Two Sicilies', 'Sierra Leone', 'Singapore', 'Slovak Republic', 'Slovenia', 'Solomon Islands', 'Somalia', 'Spain', 'Sri Lanka', 'South Sudan', 'Sudan', 'Suriname', 'Swaziland', 'Sweden', 'Switzerland', 'Syria', 'Tajikistan', 'Taiwan', 'Tanzania', 'Thailand', 'Turkmenistan', 'Togo', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Tuscany', 'United Arab Emirates', 'Uganda', 'United Kingdom', 'Ukraine', 'United Province CA', 'Uruguay', 'United States', 'USSR', 'Uzbekistan', 'Venezuela', 'Vietnam', 'Wuerttemburg', 'Yemen North', 'Yemen', 'Yugoslavia', 'Serbia and Montenegro', 'Yemen South', 'Congo Kinshasa', 'Zambia', 'Zimbabwe']
+//also: dealing with invalid entries (something like if user's search not in list of country names, prevent default)
+  $( function() {
+    $( "#first" ).autocomplete({
+      source: all_country_names
+    });
+  } );
+  $( function() {
+    $( "#second" ).autocomplete({
+      source: all_country_names
+    });
+  } );
+</script>
+
+<form action="/profile" id="choices">
     <label for="first"> Country 1: </label>
     <input id="first" class="choice" type="text" name="countryone">
 
@@ -17,8 +38,25 @@
 
     <br><br>
 
-    <input type="submit">
+    <input type="submit" id="submit-button">
 
 </form>
+
+<p id='invalid'> Invalid country name(s). Please try again. </p>
+
+<script>
+  $('#invalid').hide();
+  $('#submit-button').on('click', function validate(evt) {
+    var first_choice = $('#first').val();
+    var second_choice = $('#second').val();
+    if (all_country_names.indexOf(first_choice) == -1 || all_country_names.indexOf(second_choice) == -1) {
+        evt.preventDefault();
+        $('#invalid').show();
+    } else {
+        $('#submit-button').unbind('click').submit();
+    } 
+  })
+</script>
+
 
 {% endblock %}

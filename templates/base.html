@@ -2,10 +2,14 @@
 <head>
     <title>{% block title %} {% endblock %}</title>
 
-    {% block css %} {% endblock %}
+    <style> {% block css %} {% endblock %} </style>
 
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.2.1/Chart.js"></script>
+    <!--trying jquery plug in-->
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+    {% block head %} {% endblock %}
 
 </head>
 <body>

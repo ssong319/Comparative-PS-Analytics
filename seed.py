@@ -3,6 +3,7 @@ import requests
 from model import Country, Indicators, connect_to_db, db
 from server import app
 
+#todo: load infant mortality from CIA world factbook
 
 def load_country_and_polity():
     """Creates country objects and indicator objects with polity scores
@@ -11,13 +12,19 @@ def load_country_and_polity():
     """
 
     #format of csv file: ccode, scode, country, year, polityScore
-    f = open("seed_data/polity.csv")
+    f = open("seed_data/polity2.csv")
     #csv.reader() returns a reader object which will iterate over lines in the given csvfile
     csv_f = csv.reader(f)
 
     for row in csv_f:
         country_code = row[1]
         country_name = row[2]
+
+        if country_name == 'Korea North':
+            country_name = 'North Korea'
+        if country_name == 'Korea South':
+            country_name = 'South Korea'
+
         year = int(row[3])
         polity_score = row[4]
 
@@ -58,7 +65,39 @@ def load_gdp():
     gdp_per_cap_list = gdp_info[1]
 
     for g in gdp_per_cap_list:
-        country_name = g["country"]["value"]
+        #the elifs handle some oddball cases where WB and polity call these countries by different names (WB uses formal name)
+        if g["country"]["value"] == "Egypt, Arab Rep.":
+            country_name = 'Egypt'
+        elif g["country"]["value"] == "Gambia, The":
+            country_name = 'Gambia'
+        elif g["country"]["value"] == "Iran, Islamic Rep.":
+            country_name = 'Iran'
+        elif g["country"]["value"] == "Cote d'Ivoire":
+            country_name = 'Ivory Coast'
+        elif g["country"]["value"] == "Congo, Rep.":
+            country_name = 'Congo Brazzaville'
+        elif g["country"]["value"] == "Korea, Dem. People's Rep.":
+            country_name = 'North Korea'
+        elif g["country"]["value"] == "Korea, Rep.":
+            country_name = 'South Korea'
+        elif g["country"]["value"] == "Russian Federation":
+            country_name = 'Russia'
+        elif g["country"]["value"] == "Syrian Arab Republic":
+            country_name = 'Syria'
+        elif g["country"]["value"] == "Yemen, Rep.":
+            country_name = 'Yemen'
+        elif g["country"]["value"] == "Congo, Dem. Rep.":
+            country_name = 'Congo Kinshasa'
+        elif g["country"]["value"] == "Lao PDR":
+            country_name = 'Laos'
+        elif g["country"]["value"] == "Macedonia, FYR":
+            country_name = 'Macedonia'
+        elif g["country"]["value"] == "Timor-Leste":
+            country_name = 'East Timor'
+        else:
+            country_name = g["country"]["value"]
+
+
         year = int(g["date"])
 
         if g["value"] is not None:
@@ -166,6 +205,6 @@ if __name__ == "__main__":
 
     load_country_and_polity()
     load_gdp()
-    load_ease_of_business()
-    load_pol_stability()
+    #load_ease_of_business()
+    #load_pol_stability()
     #load_unemployment()
