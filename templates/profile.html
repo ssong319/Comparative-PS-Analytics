@@ -9,8 +9,8 @@
     margin-left: 50px;
 }
 
-#line {
-
+#divline {
+    margin-right: 100px;
 }
 
 .axis path,
@@ -64,9 +64,10 @@
 
 <br>
 <h3> Polity Time Series </h3>
-<canvas id="lineChart" width="425" height="125"></canvas>
-<div id="line"></div>
 
+<div id="divline">
+<canvas id="lineChart" width="425" height="125"></canvas>
+</div>
 
 <script>
 Chart.defaults.global.responsive = true;
@@ -79,26 +80,32 @@ var options = {
         } ],
         yAxes : [ {
             gridLines : {
-                display : false
+                display : true
             }
         }]
     }
     };
+
 var ctx = $("#lineChart").get(0).getContext("2d");
 
 $.get("/polity-scores.json", function (data) {
     var polityLineChart = new Chart.Line(ctx, {data: data, options: options});
-    $('#line').html(polityLineChart);
-
 });
-
 
 </script>
 
-<h4> {{ c1 }}: GDP per capita by year </h4>
+<br>
 
 <script>
   d3.json('/gdp.json', function makeScatter(gdp_data) {
+
+    d3.select('body').append('p').text(gdp_data.nameone + " : GDP per capita by year");
+
+    if (gdp_data.one.length <= 1) {
+        d3.select('body').append('p').text('No data available for this country');
+        d3.select('body').append('br')
+    } else {
+
     var w = 900;
     var h = 400;
     var padding = 50;
@@ -115,11 +122,10 @@ $.get("/polity-scores.json", function (data) {
                          .range([h - padding, padding]);
     var rScale = d3.scale.linear()
                          .domain([2, 5]);
-    //set up fill color for circles
-    //[-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    var color = d3.scale.linear()
-                        .domain([-10, 10])
-                        .range(["red", "blue"]);
+
+    var color = d3.scale.ordinal()
+                        .domain([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 999])
+                        .range(["rgba(165, 0, 33, 1.0)", "rgba(165, 0, 33, 1.0)", "rgba(216, 38, 50, 1.0)", "rgba(216, 38, 50, 1.0)", "rgba(247, 109, 94, 1.0)", "rgba(247, 109, 94, 1.0)", "rgba(243, 171, 159, 1.0)", "rgba(243, 171, 159, 1.0)", "rgba(244, 214, 209, 1.0)", "rgba(244, 214, 209, 1.0)", "rgba(219, 190, 248, 1.0)", "rgba(192, 235, 251, 1.0)", "rgba(192, 235, 251, 1.0)", "rgba(114, 217, 255, 1.0)", "rgba(114, 217, 255, 1.0)", "rgba(63, 160, 255, 1.0)", "rgba(63, 160, 255, 1.0)", "rgba(38, 77, 245, 1.0)", "rgba(38, 77, 245, 1.0)", "rgba(41, 10, 216, 1.0)", "rgba(41, 10, 216, 1.0)", "rgba(235, 236, 161, 1.0)"]);
 
     //x and y axis
     //xAxis - format() to get rid of the commas in years
@@ -151,14 +157,24 @@ $.get("/polity-scores.json", function (data) {
         .attr("class", "axis")
         .attr("transform", "translate(" + padding + ",0)")
         .call(yAxis);
+    //end else stmt
+    }
   })
 
 </script>
 
-<h4> {{ c2 }}: GDP per capita by year </h4>
 
 <script>
+
   d3.json('/gdp.json', function makeScatter(gdp_data) {
+
+    d3.select('body').append('p').text(gdp_data.nametwo + " : GDP per capita by year");
+
+    if (gdp_data.two.length <= 1) {
+        d3.select('body').append('p').text('No data available for this country');
+        d3.select('body').append('br')
+    } else {
+
     var w = 900;
     var h = 400;
     var padding = 50;
@@ -175,11 +191,10 @@ $.get("/polity-scores.json", function (data) {
                          .range([h - padding, padding]);
     var rScale = d3.scale.linear()
                          .domain([2, 5]);
-    //set up fill color for circles
-    //[-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    var color = d3.scale.linear()
-                        .domain([-10, 10])
-                        .range(["red", "blue"]);
+   
+    var color = d3.scale.ordinal()
+                         .domain([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 999])
+                         .range(["rgba(165, 0, 33, 1.0)", "rgba(165, 0, 33, 1.0)", "rgba(216, 38, 50, 1.0)", "rgba(216, 38, 50, 1.0)", "rgba(247, 109, 94, 1.0)", "rgba(247, 109, 94, 1.0)", "rgba(243, 171, 159, 1.0)", "rgba(243, 171, 159, 1.0)", "rgba(244, 214, 209, 1.0)", "rgba(244, 214, 209, 1.0)", "rgba(219, 190, 248, 1.0)", "rgba(192, 235, 251, 1.0)", "rgba(192, 235, 251, 1.0)", "rgba(114, 217, 255, 1.0)", "rgba(114, 217, 255, 1.0)", "rgba(63, 160, 255, 1.0)", "rgba(63, 160, 255, 1.0)", "rgba(38, 77, 245, 1.0)", "rgba(38, 77, 245, 1.0)", "rgba(41, 10, 216, 1.0)", "rgba(41, 10, 216, 1.0)", "rgba(235, 236, 161, 1.0)"]);
 
     //x and y axis
     //xAxis - format() to get rid of the commas in years
@@ -211,6 +226,7 @@ $.get("/polity-scores.json", function (data) {
         .attr("class", "axis")
         .attr("transform", "translate(" + padding + ",0)")
         .call(yAxis);
+    }
   })
 
 </script>

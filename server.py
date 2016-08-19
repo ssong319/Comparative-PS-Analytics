@@ -27,12 +27,11 @@ def show_profile():
     recent_metrics = {}
 
     #obtain the list of indicator objs for each selected country
-    if selection_one:
-        country_one_indicators = Country.query.get(selection_one.title()).indicators
-        session["first_country"] = country_one_indicators[0].country_name
-    if selection_two:
-        country_two_indicators = Country.query.get(selection_two.title()).indicators
-        session["second_country"] = country_two_indicators[0].country_name
+    country_one_indicators = Country.query.get(selection_one).indicators
+    session["first_country"] = country_one_indicators[0].country_name
+
+    country_two_indicators = Country.query.get(selection_two).indicators
+    session["second_country"] = country_two_indicators[0].country_name
 
     def insert_recent_values(ind_list):
         """obtains recent values and stores them in recent_metrics dictionary
@@ -125,36 +124,36 @@ def get_polity_data():
         'label': session["first_country"],
         'fill': False,
         'lineTension': 0,
-        'borderColor': "rgba(209,24,24,1)",
+        'borderColor': "rgba(69,50,137,1)",
         'borderCapStyle': 'round',
         'borderJoinStyle': 'miter',
-        'pointBorderColor': "rgba(209,24,24,1)",
-        'pointBackgroundColor': "#fff",
+        'pointBorderColor': "rgba(69,50,137,1)",
+        'pointBackgroundColor': "rgba(69,50,137,1)",
         'pointBorderWidth': 1,
         'pointHoverRadius': 5,
-        'pointHoverBackgroundColor': "rgba(75,192,192,1)",
-        'pointHoverBorderColor': "rgba(220,220,220,1)",
+        'pointHoverBackgroundColor': "rgba(69,50,137,1)",
+        'pointHoverBorderColor': "rgba(69,50,137,1)",
         'pointHoverBorderWidth': 2,
-        'pointRadius': 1,
-        'pointHitRadius': 10,
+        'pointRadius': 0.5,
+        'pointHitRadius': 5,
         'data': data_c1,
         },
         {
             'label': session["second_country"],
             'fill': False,
             'lineTension': 0,
-            'borderColor': "rgba(24,24,209,1)",
+            'borderColor': "rgba(37,115,55,1)",
             'borderCapStyle': 'round',
             'borderJoinStyle': 'miter',
-            'pointBorderColor': "rgba(24,24,209,1)",
-            'pointBackgroundColor': "#fff",
+            'pointBorderColor': "rgba(37,115,55,1)",
+            'pointBackgroundColor': "rgba(37,115,55,1)",
             'pointBorderWidth': 1,
             'pointHoverRadius': 5,
-            'pointHoverBackgroundColor': "rgba(75,192,192,1)",
-            'pointHoverBorderColor': "rgba(220,220,220,1)",
+            'pointHoverBackgroundColor': "rgba(37,115,55,1)",
+            'pointHoverBorderColor': "rgba(37,115,55,1)",
             'pointHoverBorderWidth': 2,
-            'pointRadius': 1,
-            'pointHitRadius': 10,
+            'pointRadius': 0.5,
+            'pointHitRadius': 5,
             'data': data_c2,
         }]}
 
@@ -175,20 +174,28 @@ def get_gdp_data():
         if c.gdp_per_cap:
             year1 = c.year
             gdp_per_cap1 = c.gdp_per_cap
-            polity_score1 = c.polity
+            if c.polity or c.polity == 0:
+                polity_score1 = c.polity
+            else:
+                polity_score1 = 999
             dataset1.append([year1, gdp_per_cap1, polity_score1])
 
     countries_gdps['one'] = dataset1
+    countries_gdps['nameone'] = session["first_country"]
 
     for d in country2_ind:
         #only add to dataset if there is a gdp data
         if d.gdp_per_cap:
             year2 = d.year
             gdp_per_cap2 = d.gdp_per_cap
-            polity_score2 = d.polity
+            if d.polity or d.polity == 0:
+                polity_score2 = d.polity
+            else:
+                polity_score2 = 999
             dataset2.append([year2, gdp_per_cap2, polity_score2])
 
     countries_gdps['two'] = dataset2
+    countries_gdps['nametwo'] = session["second_country"]
 
     return jsonify(countries_gdps)
 
