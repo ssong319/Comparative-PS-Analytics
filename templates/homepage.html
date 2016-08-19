@@ -9,7 +9,7 @@
 
 {% block content %}
 
-<h1> Select 2 countries <h1>
+<h1> Select 2 countries </h1>
 
 <script>
 
@@ -46,13 +46,15 @@
 
 <script>
   $('#invalid').hide();
-  $('#submit-button').on('click', function validate(evt) {
+  $('#submit-button').on('click', function (evt) {
     var first_choice = $('#first').val();
     var second_choice = $('#second').val();
+    //check to see if user's inputs are proper country names.
     if (all_country_names.indexOf(first_choice) == -1 || all_country_names.indexOf(second_choice) == -1) {
         evt.preventDefault();
         $('#invalid').show();
     } else {
+        //unbind removes a previously attached event handler
         $('#submit-button').unbind('click').submit();
     } 
   })

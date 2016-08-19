@@ -64,7 +64,7 @@ def show_profile():
     insert_recent_values(country_one_indicators)
     insert_recent_values(country_two_indicators)
 
-    return render_template("profile.html", recent_metrics=recent_metrics)
+    return render_template("profile.html", recent_metrics=recent_metrics, c1=selection_one, c2=selection_two)
 
 @app.route('/polity-scores.json')
 def get_polity_data():
@@ -164,14 +164,35 @@ def get_polity_data():
 def get_gdp_data():
     """Return gdp per cap data with corresponding year and polity score"""
 #var dataset = [[year, gdp, polity], [year, gdp, polity]...]
-    dataset = []
+    dataset1 = []
+    dataset2 = []
+    countries_gdps = {}
     country1_ind = Country.query.get(session["first_country"]).indicators
+    country2_ind = Country.query.get(session["second_country"]).indicators
 
     for c in country1_ind:
-        year = country1_ind.year
-        gdp_per_cap = country1_ind.gdp_per_cap
-        polity_score = country1_ind.polity
-        dataset.append([year, gdp_per_cap, polity_score])
+        #only add to dataset if there is a gdp data
+        if c.gdp_per_cap:
+            year1 = c.year
+            gdp_per_cap1 = c.gdp_per_cap
+            polity_score1 = c.polity
+            dataset1.append([year1, gdp_per_cap1, polity_score1])
+
+    countries_gdps['one'] = dataset1
+
+    for d in country2_ind:
+        #only add to dataset if there is a gdp data
+        if d.gdp_per_cap:
+            year2 = d.year
+            gdp_per_cap2 = d.gdp_per_cap
+            polity_score2 = d.polity
+            dataset2.append([year2, gdp_per_cap2, polity_score2])
+
+    countries_gdps['two'] = dataset2
+
+    return jsonify(countries_gdps)
+
+
 
 
 
