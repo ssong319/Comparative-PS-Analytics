@@ -1,7 +1,9 @@
 from jinja2 import StrictUndefined
 from flask import Flask, request, render_template, jsonify, session
 from flask_debugtoolbar import DebugToolbarExtension
-from model import connect_to_db, db, Country, Indicators
+from model import connect_to_db, db, Country, Indicators, News
+import os
+import requests
 
 
 app = Flask(__name__)
@@ -64,6 +66,12 @@ def show_profile():
     insert_recent_values(country_two_indicators)
 
     return render_template("profile.html", recent_metrics=recent_metrics, c1=selection_one, c2=selection_two)
+
+@app.route('/metrics')
+def metric_page():
+    """Display metric page information"""
+
+    return render_template("metrics.html")
 
 @app.route('/polity-scores.json')
 def get_polity_data():
@@ -199,6 +207,59 @@ def get_gdp_data():
 
     return jsonify(countries_gdps)
 
+
+@app.route('/news')
+def get_news_data():
+    """Get relevant news articles for both countries"""
+    key = os.environ['BING_SEARCH_KEY']
+    head_of_state = 'Obama'
+
+    payload = {'q': head_of_state, 'mkt': 'en-us'}
+    headers = {'Ocp-Apim-Subscription-Key': key}
+
+    r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/news/search', params=payload, headers=headers)
+
+    articles = r.json()
+
+    print articles
+
+
+
+def get_news_data():
+    """Get relevant news articles for both countries"""
+    key = os.environ['BING_SEARCH_KEY']
+    head_of_state = 'dilma rousseff'
+
+    payload = {'q': head_of_state, 'mkt': 'en-us', 'count': 100}
+    headers = {'Ocp-Apim-Subscription-Key': key}
+
+    r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/news/search', params=payload, headers=headers)
+
+    all_articles = r.json()
+    #news articles is a list of dictionaries, each dict containing info about 1 news article
+    news_articles = all_articles['value']
+
+    for n in news_articles:
+        title = n['name']
+        url = n['url']
+        description = n['description']
+
+        if n['datePublished']:
+            date = n['datePublished']
+
+        if n['image']['thumbnail']['contentUrl']:
+            image_url = n['image']['thumbnail']['contentUrl']
+
+        if n['provider'][0]['name']:
+            source = n['provider'][0]['name']
+
+        #country name should be customized later
+        article = News(title=title, country_name='Brazil', description=description, date=date, url=url, image_url=image_url, source=source)
+        db.session.add(article)
+
+    db.session.commit()
+
+get_news_data()
 
 
 

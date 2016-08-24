@@ -196,6 +196,66 @@ def load_unemployment():
 
     db.session.commit()
 
+# def load_wikipedia():
+#     import requests
+# import re
+# import os
+# import json
+
+# url = "https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json"
+# cache_file = "json_cache"
+# if os.path.isfile(cache_file):
+#     with open(cache_file, "r") as f:
+#         topics = json.load(f)
+# else:
+#     r = requests.get(url)
+#     with open(cache_file, "wb") as f:
+#         f.write(r.content)
+#         topics = r.json()
+
+
+
+# # r = requests.get('https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json')
+# # topics = r.json()
+# #heads is the long string with all the info
+# heads = topics['query']['pages']['380398']['revisions'][0]['*']
+
+# #start_of_table is 1588
+# start_of_table = heads.find("{{flag|Afghanistan}}")
+# end_of_table = heads.find("\n\n==Other states==\n")
+
+# table_str = heads[start_of_table:end_of_table]
+
+# #table_arr = table_str.split("\n|")
+# table_arr = table_str.split("{{flag|")
+
+# countries_dict = {}
+
+
+#     count = 0
+# for line in table_arr:
+#     count += 1
+#     m = re.match(r'([^}]+)}}', line)   #this is flag version
+
+#     if m:
+#         name = m.group(1)
+#         countries_dict[name] = {}
+
+#     arr_line = line.split(u'&nbsp;\u2013')
+
+#     for a in arr_line:
+#         #print a
+#         #bug - not capturing [[prime minister ...]]
+#         m2 = re.search(r'\[([^]]+)\]\]', a)
+#         if m2:
+#             title_and_names = m2.group(0)
+#             #print title_and_names
+#             #bug - not ca
+#             print title_and_names[2:-2]
+
+#     if count == 4:
+#         break
+
 
 
 

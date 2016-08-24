@@ -28,6 +28,20 @@ class Indicators(db.Model):
     def __repr__(self):
         return "<Indicators indicator_id=%s country_name=%s year=%s polity=%s eodb=%s pol_stability=%s gdp_per_cap=%s unemployment=%s> \n" % (self.indicator_id, self.country_name, self.year, self.polity, self.eodb, self.pol_stability, self.gdp_per_cap, self.unemployment)
 
+class News(db.Model):
+    __tablename__ = "news"
+
+    news_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    country_name = db.Column(db.String(50), db.ForeignKey('countries.country_name'))
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.String(600), nullable=True)
+    date = db.Column(db.String(100), nullable=True)
+    url = db.Column(db.String(400), nullable=True)
+    image_url = db.Column(db.String(400), nullable=True)
+    source = db.Column(db.String(50), nullable=True)
+    sent_score = db.Column(db.Integer, nullable=True)
+
+
 
 ###
 def connect_to_db(app):

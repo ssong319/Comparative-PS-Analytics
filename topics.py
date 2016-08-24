@@ -1,4 +1,5 @@
-#import requests
+import requests
+import re
 
 #all topic indicators and information about them
 #r = requests.get('http://api.worldbank.org/indicators?per_page=16848&format=json')
@@ -25,3 +26,13 @@
 # selected["IC.BUS.EASE.XQ"] = {name: "Ease of doing business index (1=most business-friendly regulations)", sourceNote: "Ease of doing business ranks economies from 1 to 189, with first place being the best. A high ranking (a low numerical rank) means that the regulatory environment is conducive to business operation. The index averages the country's percentile rankings on 10 topics covered in the World Bank's Doing Business. The ranking on each topic is the simple average of the percentile rankings on its component indicators."}
 
 #Estimate   Estimate of governance (ranges from approximately -2.5 (weak) to 2.5 (strong) governance performance)
+
+r = requests.get('https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json')
+topics = r.json()
+#heads is the long string with all the info
+heads = topics['query']['pages']['380398']['revisions'][0]['*']
+
+arr_of_countries = heads.split("flag|")
+
+for a in arr_of_countries:
+    print re.match(r"\[\[[A-Z][a-z]*\]\]", a)
