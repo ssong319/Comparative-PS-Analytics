@@ -28,18 +28,34 @@ class Indicators(db.Model):
     def __repr__(self):
         return "<Indicators indicator_id=%s country_name=%s year=%s polity=%s eodb=%s pol_stability=%s gdp_per_cap=%s unemployment=%s> \n" % (self.indicator_id, self.country_name, self.year, self.polity, self.eodb, self.pol_stability, self.gdp_per_cap, self.unemployment)
 
+
+# class Leader(db.Model):
+#     __tablename__ = "leaders"
+
+#     leader_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+#     country_name = db.Column(db.String(50), db.ForeignKey('countries.country_name'))
+#     leader_name = db.Column(db.String(400), nullable=False)
+#     country = db.relationship('Country', backref=db.backref("leaders"))
+
+#     def __repr__(self):
+#         return "<Leader leader_id=%s country_name=%s leader_name=%s> \n" % (self.leader_id, self.country_name, self.leader_name)
+
 class News(db.Model):
     __tablename__ = "news"
 
     news_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    country_name = db.Column(db.String(50), db.ForeignKey('countries.country_name'))
-    title = db.Column(db.String(150), nullable=False)
-    description = db.Column(db.String(600), nullable=True)
-    date = db.Column(db.String(100), nullable=True)
+    country_name = db.Column(db.String(100), db.ForeignKey('countries.country_name'))
+    title = db.Column(db.String(400), nullable=False)
+    description = db.Column(db.Text(), nullable=True)
+    date = db.Column(db.String(400), nullable=True)
     url = db.Column(db.String(400), nullable=True)
     image_url = db.Column(db.String(400), nullable=True)
     source = db.Column(db.String(50), nullable=True)
     sent_score = db.Column(db.Integer, nullable=True)
+    country = db.relationship('Country', backref=db.backref("news"))
+
+    def __repr__(self):
+        return "<News news_id=%s country_name=%s title=%s description=%s date=%s url=%s source=%s> \n" % (self.news_id, self.country_name, self.title, self.description, self.date, self.url, self.source)
 
 
 

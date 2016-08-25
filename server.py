@@ -211,26 +211,14 @@ def get_gdp_data():
 @app.route('/news')
 def get_news_data():
     """Get relevant news articles for both countries"""
+    news = {}
+    country_one = session["first_country"]
+    country_two = session["second_country"]
+
     key = os.environ['BING_SEARCH_KEY']
-    head_of_state = 'Obama'
+    topic = country_one
 
-    payload = {'q': head_of_state, 'mkt': 'en-us'}
-    headers = {'Ocp-Apim-Subscription-Key': key}
-
-    r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/news/search', params=payload, headers=headers)
-
-    articles = r.json()
-
-    print articles
-
-
-
-def get_news_data():
-    """Get relevant news articles for both countries"""
-    key = os.environ['BING_SEARCH_KEY']
-    head_of_state = 'dilma rousseff'
-
-    payload = {'q': head_of_state, 'mkt': 'en-us', 'count': 100}
+    payload = {'q': topic, 'mkt': 'en-us', 'count': 100}
     headers = {'Ocp-Apim-Subscription-Key': key}
 
     r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/news/search', params=payload, headers=headers)
@@ -247,19 +235,27 @@ def get_news_data():
         if n['datePublished']:
             date = n['datePublished']
 
-        if n['image']['thumbnail']['contentUrl']:
-            image_url = n['image']['thumbnail']['contentUrl']
+        # if n['image']['thumbnail']['contentUrl']:
+        #     image_url = n['image']['thumbnail']['contentUrl']
 
         if n['provider'][0]['name']:
             source = n['provider'][0]['name']
 
         #country name should be customized later
-        article = News(title=title, country_name='Brazil', description=description, date=date, url=url, image_url=image_url, source=source)
+        article = News(title=title, country_name=country_one, description=description, date=date, url=url, source=source)
         db.session.add(article)
 
     db.session.commit()
 
-get_news_data()
+    fetch = News.query.filter(News.country_name == country_one).all()
+
+    if fetch:
+        for f in fetch:
+            news[f.news_id] = {'title': f.title, 'description': f.description}
+
+    return jsonify(news)
+
+
 
 
 
