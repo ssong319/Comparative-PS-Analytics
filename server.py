@@ -191,6 +191,8 @@ def get_gdp_data():
     countries_gdps['one'] = dataset1
     countries_gdps['nameone'] = session["first_country"]
 
+    #to abstract gdp scatterplot, need countries_gdps to be nested
+
     for d in country2_ind:
         #only add to dataset if there is a gdp data
         if d.gdp_per_cap:

@@ -61,9 +61,24 @@ def load_gdp():
     #setattr(object, attrname, value) where attrname can be a string that corresponds to the attr
 
     #this api call gets all gdp per cap info for all countries for all available years
-    r = requests.get('http://api.worldbank.org/countries/all/indicators/NY.GDP.PCAP.CD?per_page=14784&format=json')
+    url = 'http://api.worldbank.org/countries/all/indicators/NY.GDP.PCAP.CD?per_page=14784&format=json'
 
-    gdp_info = r.json()
+    #commented this out to use caching instead
+    #r = requests.get(url)
+    #gdp_info = r.json()
+
+    #json.load() can read a file directly, second param in open specifies the mode, r=read, wb=write in binary
+    cache_file = "json_cache"
+    if os.path.isfile(cache_file):
+        with open(cache_file, "r") as f:
+            gdp_info = json.load(f)
+    else:
+        r = requests.get(url)
+        with open(cache_file, "wb") as f:
+            f.write(r.content)
+            gdp_info = r.json()
+
+
     #gdp_per_cap_list is a list with dicts containing gdp info for each country per year
     gdp_per_cap_list = gdp_info[1]
 
@@ -200,16 +215,16 @@ def load_unemployment():
     db.session.commit()
 
 def load_wikipedia():
-    url = "https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json"
-    cache_file = "json_cache"
-    if os.path.isfile(cache_file):
-        with open(cache_file, "r") as f:
-            topics = json.load(f)
-    else:
-        r = requests.get(url)
-        with open(cache_file, "wb") as f:
-            f.write(r.content)
-            topics = r.json()
+    # url = "https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json"
+    # cache_file = "json_cache"
+    # if os.path.isfile(cache_file):
+    #     with open(cache_file, "r") as f:
+    #         topics = json.load(f)
+    # else:
+    #     r = requests.get(url)
+    #     with open(cache_file, "wb") as f:
+    #         f.write(r.content)
+    #         topics = r.json()
 
     # r = requests.get('https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json')
     # topics = r.json()

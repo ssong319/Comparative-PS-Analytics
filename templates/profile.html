@@ -124,6 +124,7 @@ function createNews(i) {
         //remove the child notes inside the headlines div so there's no repetition after each click 
         $('#headlines').empty();
         //check to see if results is an empty obj.
+        //instead of this just do the year blocker before the ajax call as an if stmt
         if (!jQuery.isEmptyObject(results)) {
           for (r in results) {
             $(".news").append("<div> <p> title: " + results[r]['title'] + " </p> <p> description: " + results[r]['description'] + "</p> </div>");
@@ -133,6 +134,7 @@ function createNews(i) {
         }
     });
 }
+
 
 
   d3.json('/gdp.json', function makeScatter(gdp_data) {
