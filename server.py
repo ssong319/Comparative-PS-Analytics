@@ -170,7 +170,11 @@ def get_polity_data():
 @app.route('/gdp.json')
 def get_gdp_data():
     """Return gdp per cap data with corresponding year and polity score"""
-#var dataset = [[year, gdp, polity], [year, gdp, polity]...]
+    #var dataset = [[year, gdp, polity], [year, gdp, polity]...]
+    #these 2 var is for the abstraction part
+    country1_name = session["first_country"]
+    country2_name = session["second_country"]
+
     dataset1 = []
     dataset2 = []
     countries_gdps = {}
@@ -188,10 +192,13 @@ def get_gdp_data():
                 polity_score1 = 999
             dataset1.append([year1, gdp_per_cap1, polity_score1])
 
-    countries_gdps['one'] = dataset1
-    countries_gdps['nameone'] = session["first_country"]
+    #NA
+    # countries_gdps['one'] = dataset1
+    # countries_gdps['nameone'] = session["first_country"]
+    #/NA
 
     #to abstract gdp scatterplot, need countries_gdps to be nested
+    #countries_gdps key would be name of country, and value would be dataset
 
     for d in country2_ind:
         #only add to dataset if there is a gdp data
@@ -203,9 +210,13 @@ def get_gdp_data():
             else:
                 polity_score2 = 999
             dataset2.append([year2, gdp_per_cap2, polity_score2])
+    #NA
+    # countries_gdps['two'] = dataset2
+    # countries_gdps['nametwo'] = session["second_country"]
+    #/NA
 
-    countries_gdps['two'] = dataset2
-    countries_gdps['nametwo'] = session["second_country"]
+    countries_gdps[country1_name] = dataset1
+    countries_gdps[country2_name] = dataset2
 
     return jsonify(countries_gdps)
 
