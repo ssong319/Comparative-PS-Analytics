@@ -49,7 +49,6 @@ class News(db.Model):
     description = db.Column(db.Text(), nullable=True)
     date = db.Column(db.String(400), nullable=True)
     url = db.Column(db.String(400), nullable=True)
-    image_url = db.Column(db.String(400), nullable=True)
     source = db.Column(db.String(50), nullable=True)
     sent_score = db.Column(db.Integer, nullable=True)
     country = db.relationship('Country', backref=db.backref("news"))

@@ -38,8 +38,6 @@
 {% endblock %}
 
 
-
-
 {% block content %}
 
 
@@ -106,7 +104,7 @@ $.get("/polity-scores.json", function (data) {
 </script>
 
 <br>
-<div class="news">
+<div class="news" id="headlines">
     <!-- <div id="item1"> testing news item #1 </div>
     <div id="item2"> news item #2 </div>
     <div id="item3"> news item #3 </div>
@@ -115,17 +113,24 @@ $.get("/polity-scores.json", function (data) {
 
 <script>
 
-function createNews() {
-    console.log("test 111");
-    //figure out how to send data to back end
-    $.get("/news", function(results) { 
-      console.log("test 222");
-      console.log(results);
-      for r in results {
-        console.log('test333');
-        $(".news").append("<div> title: " + results[r]['title'] + "</div>");
-      }
-
+//i is a list like [x, y, color] of the data point the user clicked, this will come from the d param in the d3 event handler function
+function createNews(i) {
+    //to work with api call limit, allow call only for 2015, maybe cache the year before that, then block the rest
+    var params = {
+        'year': i[0]
+    };
+    //todo: add a check here to see if user already clicked the same circle so we don't send the same req twice
+    $.post('/news', params, function(results) {
+        //remove the child notes inside the headlines div so there's no repetition after each click 
+        $('#headlines').empty();
+        //check to see if results is an empty obj.
+        if (!jQuery.isEmptyObject(results)) {
+          for (r in results) {
+            $(".news").append("<div> <p> title: " + results[r]['title'] + " </p> <p> description: " + results[r]['description'] + "</p> </div>");
+          }
+        } else {
+            $(".news").append("<div> <p> Search results not available for this year </p> </div>");
+        }
     });
 }
 
@@ -136,7 +141,7 @@ function createNews() {
 
     if (gdp_data.one.length <= 1) {
         d3.select('body').append('p').text('No data available for this country');
-        d3.select('body').append('br')
+        d3.select('body').append('br');
     } else {
 
     var w = 900;
@@ -172,6 +177,8 @@ function createNews() {
 
     //creating the circles, for event handler funct, d is the data, i is the index. Thus d would be a list of the 
     //data points. Once finished with news change click to 'mouseover'
+
+    //on click here
     svg.selectAll("circle")
         .data(dataset)
         .enter()
@@ -181,7 +188,7 @@ function createNews() {
         .attr("r", function(d) { return 4; })
         .style('fill', function(d) { return color(d[2]); } )
         .on('click', function(d, i) {
-            createNews(); } );
+            createNews(d); } );
 
     //creating the axes
     svg.append("g")

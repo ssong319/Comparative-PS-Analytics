@@ -208,52 +208,63 @@ def get_gdp_data():
     return jsonify(countries_gdps)
 
 
-@app.route('/news')
+@app.route('/news', methods=['POST'])
 def get_news_data():
     """Get relevant news articles for both countries"""
+
+    #js prop becomes key in request.form dict
+    y = request.form.get('year')
     news = {}
-    country_one = session["first_country"]
-    country_two = session["second_country"]
 
-    key = os.environ['BING_SEARCH_KEY']
-    topic = country_one
+    if y == '2015':
+        country_one = session["first_country"]
+        country_two = session["second_country"]
 
-    payload = {'q': topic, 'mkt': 'en-us', 'count': 100}
-    headers = {'Ocp-Apim-Subscription-Key': key}
+        key = os.environ['BING_SEARCH_KEY']
+        #Ex: Brazil in 2015, Argentina in 2015...
+        #note: concat not checked
+        topic = country_one + ' in ' + y
 
-    r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/news/search', params=payload, headers=headers)
+        #setting initial count to 5, change later
+        payload = {'q': topic, 'mkt': 'en-us', 'count': 5}
+        headers = {'Ocp-Apim-Subscription-Key': key}
 
-    all_articles = r.json()
-    #news articles is a list of dictionaries, each dict containing info about 1 news article
-    news_articles = all_articles['value']
+        r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/news/search', params=payload, headers=headers)
 
-    for n in news_articles:
-        title = n['name']
-        url = n['url']
-        description = n['description']
+        all_articles = r.json()
+        #news articles is a list of dictionaries, each dict containing info about 1 news article
+        news_articles = all_articles['value']
 
-        if n['datePublished']:
-            date = n['datePublished']
+        for n in news_articles:
+            title = n['name']
+            url = n['url']
+            description = n['description']
 
-        # if n['image']['thumbnail']['contentUrl']:
-        #     image_url = n['image']['thumbnail']['contentUrl']
+            if n['datePublished']:
+                date = n['datePublished']
 
-        if n['provider'][0]['name']:
-            source = n['provider'][0]['name']
+            if n['provider'][0]['name']:
+                source = n['provider'][0]['name']
 
-        #country name should be customized later
-        article = News(title=title, country_name=country_one, description=description, date=date, url=url, source=source)
-        db.session.add(article)
+            article = News(title=title, country_name=country_one, description=description, date=date, url=url, source=source)
+            db.session.add(article)
 
-    db.session.commit()
+        db.session.commit()
 
-    fetch = News.query.filter(News.country_name == country_one).all()
+        fetch = News.query.filter(News.country_name == country_one).all()
 
-    if fetch:
-        for f in fetch:
-            news[f.news_id] = {'title': f.title, 'description': f.description}
+        if fetch:
+            for f in fetch:
+                news[f.news_id] = {'title': f.title, 'description': f.description}
 
-    return jsonify(news)
+        return jsonify(news)
+
+    else:
+        return jsonify(news)
+
+
+    #test code
+    #return jsonify({'h': y, 'example': 'bbb'})
 
 
 
