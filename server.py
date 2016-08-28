@@ -170,7 +170,8 @@ def get_polity_data():
 @app.route('/gdp.json')
 def get_gdp_data():
     """Return gdp per cap data with corresponding year and polity score"""
-    #var dataset = [[year, gdp, polity], [year, gdp, polity]...]
+    #var dataset = [[year, gdp, polity, index], [year, gdp, polity, index]...]
+    #index is not necessary to create the graphs but comes in handy with the news feature later on
     #these 2 var is for the abstraction part
     country1_name = session["first_country"]
     country2_name = session["second_country"]
@@ -190,7 +191,7 @@ def get_gdp_data():
                 polity_score1 = c.polity
             else:
                 polity_score1 = 999
-            dataset1.append([year1, gdp_per_cap1, polity_score1])
+            dataset1.append([year1, gdp_per_cap1, polity_score1, 1])
 
     #NA
     # countries_gdps['one'] = dataset1
@@ -209,7 +210,7 @@ def get_gdp_data():
                 polity_score2 = d.polity
             else:
                 polity_score2 = 999
-            dataset2.append([year2, gdp_per_cap2, polity_score2])
+            dataset2.append([year2, gdp_per_cap2, polity_score2, 2])
     #NA
     # countries_gdps['two'] = dataset2
     # countries_gdps['nametwo'] = session["second_country"]
@@ -223,61 +224,82 @@ def get_gdp_data():
 
 @app.route('/news', methods=['POST'])
 def get_news_data():
-    """Get relevant news articles for both countries"""
+    """Get relevant search results given country name and year clicked"""
+
+    debug = 0
 
     #js prop becomes key in request.form dict
+    #index is a string of "1" or "2"
     y = request.form.get('year')
-    news = {}
+    index = request.form.get('country_index')
+    search_results = {}
 
-    if y == '2015':
-        country_one = session["first_country"]
-        country_two = session["second_country"]
+    if index == "1":
+        country_name = session["first_country"]
+    elif index == "2":
+        country_name = session["second_country"]
 
-        key = os.environ['BING_SEARCH_KEY']
-        #Ex: Brazil in 2015, Argentina in 2015...
-        #note: concat not checked
-        topic = country_one + ' in ' + y
+    key = os.environ['BING_SEARCH_KEY']
+    #Ex: Brazil in 2015, Argentina in 2015...
+    topic = country_name + ' in ' + y
+    search_results['tagline'] = topic
 
-        #setting initial count to 5, change later
-        payload = {'q': topic, 'mkt': 'en-us', 'count': 5}
+    #already_clicked will return an empty list if user has not clicked yet, if user has, will return a list of news obj
+    already_clicked = News.query.filter(News.country_name == country_name, News.year == y).all()
+
+    if not already_clicked:
+
+        debug += 1
+
+        payload = {'q': topic, 'responseFilter': 'Webpages', 'mkt': 'en-us'}
         headers = {'Ocp-Apim-Subscription-Key': key}
+        #'https://api.cognitive.microsoft.com/bing/v5.0/news/search'
+        r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/search', params=payload, headers=headers)
 
-        r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/news/search', params=payload, headers=headers)
+        all_results = r.json()
 
-        all_articles = r.json()
-        #news articles is a list of dictionaries, each dict containing info about 1 news article
-        news_articles = all_articles['value']
+        print all_results
 
-        for n in news_articles:
-            title = n['name']
-            url = n['url']
-            description = n['description']
+        #webpages is a list of dicts so w is each dict
+        webpages = all_results['webPages']['value']
 
-            if n['datePublished']:
-                date = n['datePublished']
+        for w in webpages:
+            title = w['name'].encode('ascii', 'ignore')
 
-            if n['provider'][0]['name']:
-                source = n['provider'][0]['name']
+            if w['url']:
+                url = w['url'].encode('ascii', 'ignore')
+            else:
+                url = None
 
-            article = News(title=title, country_name=country_one, description=description, date=date, url=url, source=source)
+            #taking out snippet for now
+            if w['snippet']:
+                snippet = w['snippet'].encode('ascii', 'ignore')
+            else:
+                snippet = None
+
+            article = News(title=title, country_name=country_name, year=y, url=url, snippet=snippet)
+            print article
             db.session.add(article)
 
         db.session.commit()
 
-        fetch = News.query.filter(News.country_name == country_one).all()
+        fetch = News.query.filter(News.country_name == country_name, News.year == y).all()
 
         if fetch:
             for f in fetch:
-                news[f.news_id] = {'title': f.title, 'description': f.description}
-
-        return jsonify(news)
+                search_results[f.news_id] = {'title': f.title, 'url': f.url, 'snippet': f.snippet}
 
     else:
-        return jsonify(news)
+        for a in already_clicked:
+            search_results[a.news_id] = {'title': a.title, 'url': a.url, 'snippet': a.snippet}
+
+    print "Num of api requests made: %s" % debug
+
+    return jsonify(search_results)
 
 
     #test code
-    #return jsonify({'h': y, 'example': 'bbb'})
+    #return jsonify({'h': y, 'example': index})
 
 
 

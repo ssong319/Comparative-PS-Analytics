@@ -214,75 +214,6 @@ def load_unemployment():
 
     db.session.commit()
 
-def load_wikipedia():
-    # url = "https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json"
-    # cache_file = "json_cache"
-    # if os.path.isfile(cache_file):
-    #     with open(cache_file, "r") as f:
-    #         topics = json.load(f)
-    # else:
-    #     r = requests.get(url)
-    #     with open(cache_file, "wb") as f:
-    #         f.write(r.content)
-    #         topics = r.json()
-
-    # r = requests.get('https://en.wikipedia.org/w/api.php?action=query&titles=List_of_current_heads_of_state_and_government&prop=revisions&rvprop=content&format=json')
-    # topics = r.json()
-    #heads is the long string with all the info
-    heads = topics['query']['pages']['380398']['revisions'][0]['*']
-
-    #start_of_table is 1588
-    start_of_table = heads.find("{{flag|Afghanistan}}")
-    end_of_table = heads.find("\n\n==Other states==\n")
-
-    table_str = heads[start_of_table:end_of_table]
-
-    #table_arr = table_str.split("\n|")
-    table_arr = table_str.split("{{flag|")
-
-    countries_dict = {}
-
-    list_of_titles_and_names = []
-
-    for line in table_arr:
-        m = re.match(r'([^}]+)}}', line)
-
-        if m:
-            name = m.group(1)
-            #you would need an if stmt here to handle off names and get more hits
-            countries_dict[name] = []
-
-        arr_line = line.split(u'&nbsp;\u2013')
-        #each arr_line is a country
-
-        for i in range(len(arr_line)):
-            #bug - not capturing [[prime minister ...]]
-            #get anything inside brackets
-            m2 = re.search(r'\[([^]]+)\]\]', arr_line[i])
-            if m2:
-                title_and_names = m2.group(0)
-                list_of_titles_and_names.append(title_and_names[2:-2])
-
-    for i in range(len(list_of_titles_and_names)):
-        for c in countries_dict:
-            if c in list_of_titles_and_names[i]:
-                #print c
-                for w in range(2):
-                    #the next one
-                    #add more titles here to get more hits
-                    if "President" not in list_of_titles_and_names[i + w] and "Prime Minister" not in list_of_titles_and_names[i + w] and "Queen" not in list_of_titles_and_names[i + w] and "King" not in list_of_titles_and_names[i + w]:
-                        #print list_of_titles_and_names[i + w]
-                        countries_dict[c].append(list_of_titles_and_names[i + w])
-
-    for unit in countries_dict:
-        fetch = Country.query.get(unit)
-        if fetch and countries_dict[unit]:
-            leader = Leader(country_name=unit, leader_name=countries_dict[unit])
-            db.session.add(leader)
-
-    db.session.commit()
-
-
 
 
 
@@ -292,7 +223,6 @@ if __name__ == "__main__":
 
     load_country_and_polity()
     load_gdp()
-    #load_wikipedia()
     #load_ease_of_business()
     #load_pol_stability()
     #load_unemployment()

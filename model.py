@@ -46,15 +46,16 @@ class News(db.Model):
     news_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     country_name = db.Column(db.String(100), db.ForeignKey('countries.country_name'))
     title = db.Column(db.String(400), nullable=False)
-    description = db.Column(db.Text(), nullable=True)
-    date = db.Column(db.String(400), nullable=True)
-    url = db.Column(db.String(400), nullable=True)
-    source = db.Column(db.String(50), nullable=True)
-    sent_score = db.Column(db.Integer, nullable=True)
+    snippet = db.Column(db.Text(), nullable=True)
+    #date = db.Column(db.String(400), nullable=True)
+    url = db.Column(db.Text(), nullable=True)
+    year = db.Column(db.String(50), nullable=False)
+    # source = db.Column(db.String(50), nullable=True)
+    # sent_score = db.Column(db.Integer, nullable=True)
     country = db.relationship('Country', backref=db.backref("news"))
 
     def __repr__(self):
-        return "<News news_id=%s country_name=%s title=%s description=%s date=%s url=%s source=%s> \n" % (self.news_id, self.country_name, self.title, self.description, self.date, self.url, self.source)
+        return "<News news_id=%s country_name=%s year=%s title=%s url=%s snippet=%s> \n" % (self.news_id, self.country_name, self.year, self.title, self.url, self.snippet)
 
 
 
