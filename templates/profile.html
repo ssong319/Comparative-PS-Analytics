@@ -44,7 +44,7 @@
 }
 
 #wrapper2 {
-    margin-top: 470px;
+    margin-top: 20px;
 }
 
 .news1 {
@@ -122,53 +122,65 @@ $.get("/polity-scores.json", function (data) {
     var polityLineChart = new Chart.Line(ctx, {data: data, options: options});
 });
 
-
 </script>
 
 <h3>GDP Time Series</h3>
 <p>Color of the circles indicate the country's polity score for that year. Ranges from red(most authoritarian) to blue(most democratic). Purple indicates a score of 0 and yellow indicates no score. </p>
 
-<div class="container" id="wrapper1">
-    <div class="news1">
-        <p>Select a circle to see search results for that year.</p>
+
+<div id="block1">
+    <div class="container" id="wrapper1">
+        <div class="news1">
+            <p>Select a circle to see search results for that year.</p>
+        </div>
     </div>
 </div>
 
-<div class="container" id="wrapper2">
-    <div class="news2">
-        <p>Select a circle to see search results for that year.</p>
+
+<div id="block2">
+    <div class="container" id="wrapper2">
+        <div class="news2">
+            <p>Select a circle to see search results for that year.</p>
+        </div>
     </div>
 </div>
+
 
 <script>
-
 //i is a list like [x, y, color] of the data point the user clicked, this will come from the d param in the d3 event handler function
-function createNews(point) {
+function createNews(point, o) {
     //index of 1 is the first country, index of 2 is the second country
     var index = point[3];
-
-    console.log(index);
     //to work with api call limit, allow call only for 2015, maybe cache the year before that, then block the rest
     var params = {
         'year': point[0],
         'country_index': index
     };
-    //todo: add a check here to see if user already clicked the same circle so we don't send the same req twice
-    //instead query db
+
+    //blocker to limit api requests
+    // if (params['year'] !== '2015') {
+    //         console.log('blocked');
+    //         return;
+    //     }
+  
     $.post('/news', params, function(results) {
-        //move this to the bottom for debugging
-        //$(".news" + String(index)).empty();
-        //console.log(results);
-        //remove the child notes inside the headlines div so there's no repetition after each click 
-        //$('#headlines').empty();
-        //check to see if results is an empty obj.
-        //instead of this just do the year blocker before the ajax call as an if stmt
+        //if o is swapped, meaning the graphs are in reverse order, swap the index accordingly otherwise the 
+        //search results will be shown in the wrong box
+        if (o == 'swapped' && index == 1) {
+            index = 2;
+        } else if (o == 'swapped' && index == 2) {
+            index = 1;
+        }
+
+        console.log(o);
+        //console.log(ref);
         if (!jQuery.isEmptyObject(results)) {
           $(".news" + String(index)).empty();
           $(".news" + String(index)).append("<p>" + results['tagline'] + "</p>");
 
           for (var r in results) {
-            var content = "<div class='item'> <li> <a href=" + results[r]['url'] + ">" + results[r]['title'] + " </a> </li>"  + "<p>" + results[r]['snippet'] + "</p> </div>";
+            var content = "<div class='item'> <li> <a href=" + results[r]['url'] + "target='_blank'>" + results[r]['title'] + " </a> </li>"  + "<p>" + results[r]['snippet'] + "</p> </div>";
+            //this if stmt is necessary b/c of the tagline prop which doesn't have the above props and thus shows undef
             if (results[r]['title']) {
                 $(".news" + String(index)).append(content);
             }
@@ -180,37 +192,42 @@ function createNews(point) {
 
 }
 
+function deleteSearchBox(n) {
+    $('#wrapper' + String(n)).remove();
+}
 
+    //bug - need to fix cases where the second country shows up first
   d3.json('/gdp.json', function makeScatter(gdp_data) {
-
-    // var graphlist = [];
-    // for (g in gdp_data) {
-    //     var convert = {};
-    //     convert[g] = gdp_data[g];
-    //     graphlist.push(convert);
-    // }
+    console.log(orient);
+    var ref = 0; //to delete the relevant search box div when there is no gdp graph
+    var orient;
 
     for (var country in gdp_data) {
+        ref++;
+        d3.select("#block" + String(ref)).append("p").text(country + " : GDP per capita by year")
+                                                     .attr("class", "label");
 
-    //for (var i = 0; i < graphlist.length; i++) {
-        //for (country in graphlist[i]) {
-
-        d3.select("body").append("p").text(country + " : GDP per capita by year")
-                                     .attr("class", "label");
-        //changing gdp_data[country] to graphlist[i][country]
         if (gdp_data[country].length <= 1) {
-            d3.select("body").append("p").text("No data available for this country");
+            d3.select("#block" + String(ref)).append("p").text("No data available for this country");
+            deleteSearchBox(ref);
+            orient = 'swapped'
         } else {
             var w = 800;
             var h = 400;
             var padding = 50;
-            //dataset = gdp_data[country]
             var dataset = gdp_data[country];
-            var svg = d3.select("body").append("svg")
+
+            //dataset[0][3] should be 2 on the 2nd iter.
+            if (ref == 2 && dataset[0][3] !== 2 && orient) {
+                orient = 'swapped';
+            }
+
+            var svg = d3.select("#block" + String(ref)).append("svg")
                         .attr("width", w)
-                        .attr("height", h);
+                        .attr("height", h)
+                        .attr("class", "graph" + String(ref));
+
             //scales for x axis, y axis and circle size. .range scales the domain data to a specified scale
-            //changed .range for xScale from w - padding * 2
             var xScale = d3.scale.linear()
                                  .domain([d3.min(dataset, function(d) { return d[0]; }), d3.max(dataset, function(d) { return d[0]; })])
                                  .range([padding, w - padding]);
@@ -224,8 +241,7 @@ function createNews(point) {
                                 .domain([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 999])
                                 .range(["rgba(165, 0, 33, 1.0)", "rgba(165, 0, 33, 1.0)", "rgba(216, 38, 50, 1.0)", "rgba(216, 38, 50, 1.0)", "rgba(247, 109, 94, 1.0)", "rgba(247, 109, 94, 1.0)", "rgba(243, 171, 159, 1.0)", "rgba(243, 171, 159, 1.0)", "rgba(244, 214, 209, 1.0)", "rgba(244, 214, 209, 1.0)", "rgba(219, 190, 248, 1.0)", "rgba(192, 235, 251, 1.0)", "rgba(192, 235, 251, 1.0)", "rgba(114, 217, 255, 1.0)", "rgba(114, 217, 255, 1.0)", "rgba(63, 160, 255, 1.0)", "rgba(63, 160, 255, 1.0)", "rgba(38, 77, 245, 1.0)", "rgba(38, 77, 245, 1.0)", "rgba(41, 10, 216, 1.0)", "rgba(41, 10, 216, 1.0)", "rgba(235, 236, 161, 1.0)"]);
 
-            //x and y axis
-            //xAxis - format() to get rid of the commas in years
+            //create x and y axis and .format() on xAxis to get rid of the commas in years
             var xAxis = d3.svg.axis()
                               .scale(xScale)
                               .orient("bottom").ticks(15)
@@ -234,10 +250,8 @@ function createNews(point) {
                               .scale(yScale)
                               .orient("left").ticks(15);
 
-            //creating the circles, for event handler funct, d is the data, i is the index. Thus d would be a list of the 
-            //data points. Once finished with news change click to 'mouseover'
-
-            //on click here
+            //creating the circles
+            //for event handler funct, d is the data like [x, y, color, c_index]
             svg.selectAll("circle")
                 .data(dataset)
                 .enter()
@@ -247,7 +261,8 @@ function createNews(point) {
                 .attr("r", function(d) { return 4; })
                 .style('fill', function(d) { return color(d[2]); } )
                 .on('click', function(d, i) {
-                    createNews(d); } );
+                    createNews(d, orient); 
+                });
 
             //creating the axes
             svg.append("g")
@@ -259,12 +274,10 @@ function createNews(point) {
                 .attr("class", "axis")
                 .attr("transform", "translate(" + padding + ",0)")
                 .call(yAxis);
-    //end else stmt
+        //end else stmt
         }
-    //} //testing second loop
-  //ending for in loop
-        //console.log("testing 444: " + country_num)
-  }
+    //ending for in loop
+    }
   //end of makeScatter funct
   })
 

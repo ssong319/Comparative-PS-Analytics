@@ -30,10 +30,10 @@ def show_profile():
 
     #obtain the list of indicator objs for each selected country
     country_one_indicators = Country.query.get(selection_one).indicators
-    session["first_country"] = country_one_indicators[0].country_name
+    session["first_country"] = selection_one
 
     country_two_indicators = Country.query.get(selection_two).indicators
-    session["second_country"] = country_two_indicators[0].country_name
+    session["second_country"] = selection_two
 
     def insert_recent_values(ind_list):
         """obtains recent values and stores them in recent_metrics dictionary
@@ -43,7 +43,6 @@ def show_profile():
         country_name = ind_list[1].country_name
         recent_metrics[country_name] = {}
 
-        #took out unemployment for now - load funct not working
         metrics = ['polity', 'gdp_per_cap', 'eodb', 'pol_stability']
         metric_description = ['Polity [+10 (full democracy) to -10 (full autocracy)]', 'GDP per capita (current US$)', 'Ease of doing business [1(best) to 189]', 'Political Stability [-2.5(weak) to 2.5(strong)]']
 
@@ -172,15 +171,15 @@ def get_gdp_data():
     """Return gdp per cap data with corresponding year and polity score"""
     #var dataset = [[year, gdp, polity, index], [year, gdp, polity, index]...]
     #index is not necessary to create the graphs but comes in handy with the news feature later on
-    #these 2 var is for the abstraction part
     country1_name = session["first_country"]
     country2_name = session["second_country"]
 
     dataset1 = []
     dataset2 = []
+    #countries_gdps key would be name of country, and value would be dataset
     countries_gdps = {}
-    country1_ind = Country.query.get(session["first_country"]).indicators
-    country2_ind = Country.query.get(session["second_country"]).indicators
+    country1_ind = Country.query.get(country1_name).indicators
+    country2_ind = Country.query.get(country2_name).indicators
 
     for c in country1_ind:
         #only add to dataset if there is a gdp data
@@ -193,14 +192,6 @@ def get_gdp_data():
                 polity_score1 = 999
             dataset1.append([year1, gdp_per_cap1, polity_score1, 1])
 
-    #NA
-    # countries_gdps['one'] = dataset1
-    # countries_gdps['nameone'] = session["first_country"]
-    #/NA
-
-    #to abstract gdp scatterplot, need countries_gdps to be nested
-    #countries_gdps key would be name of country, and value would be dataset
-
     for d in country2_ind:
         #only add to dataset if there is a gdp data
         if d.gdp_per_cap:
@@ -211,10 +202,6 @@ def get_gdp_data():
             else:
                 polity_score2 = 999
             dataset2.append([year2, gdp_per_cap2, polity_score2, 2])
-    #NA
-    # countries_gdps['two'] = dataset2
-    # countries_gdps['nametwo'] = session["second_country"]
-    #/NA
 
     countries_gdps[country1_name] = dataset1
     countries_gdps[country2_name] = dataset2
@@ -226,80 +213,78 @@ def get_gdp_data():
 def get_news_data():
     """Get relevant search results given country name and year clicked"""
 
-    debug = 0
+    # debug = 0
 
-    #js prop becomes key in request.form dict
-    #index is a string of "1" or "2"
-    y = request.form.get('year')
-    index = request.form.get('country_index')
-    search_results = {}
+    # #js prop becomes key in request.form dict
+    # #index is a string of "1" or "2"
+    # y = request.form.get('year')
+    # index = request.form.get('country_index')
+    # search_results = {}
 
-    if index == "1":
-        country_name = session["first_country"]
-    elif index == "2":
-        country_name = session["second_country"]
+    # if index == "1":
+    #     country_name = session["first_country"]
+    # elif index == "2":
+    #     country_name = session["second_country"]
 
-    key = os.environ['BING_SEARCH_KEY']
-    #Ex: Brazil in 2015, Argentina in 2015...
-    topic = country_name + ' in ' + y
-    search_results['tagline'] = topic
+    # key = os.environ['BING_SEARCH_KEY']
+    # #Ex: Brazil in 2015, Argentina in 2015...
+    # topic = country_name + ' in ' + y
+    # search_results['tagline'] = topic
 
-    #already_clicked will return an empty list if user has not clicked yet, if user has, will return a list of news obj
-    already_clicked = News.query.filter(News.country_name == country_name, News.year == y).all()
+    # #already_clicked will return an empty list if user has not clicked yet, if user has, will return a list of news obj
+    # already_clicked = News.query.filter(News.country_name == country_name, News.year == y).all()
 
-    if not already_clicked:
+    # if not already_clicked:
 
-        debug += 1
+    #     debug += 1
 
-        payload = {'q': topic, 'responseFilter': 'Webpages', 'mkt': 'en-us'}
-        headers = {'Ocp-Apim-Subscription-Key': key}
-        #'https://api.cognitive.microsoft.com/bing/v5.0/news/search'
-        r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/search', params=payload, headers=headers)
+    #     payload = {'q': topic, 'responseFilter': 'Webpages', 'mkt': 'en-us'}
+    #     headers = {'Ocp-Apim-Subscription-Key': key}
+    #     #'https://api.cognitive.microsoft.com/bing/v5.0/news/search'
+    #     r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/search', params=payload, headers=headers)
 
-        all_results = r.json()
+    #     all_results = r.json()
 
-        print all_results
+    #     print all_results
 
-        #webpages is a list of dicts so w is each dict
-        webpages = all_results['webPages']['value']
+    #     #webpages is a list of dicts so w is each dict
+    #     webpages = all_results['webPages']['value']
 
-        for w in webpages:
-            title = w['name'].encode('ascii', 'ignore')
+    #     for w in webpages:
+    #         title = w['name'].encode('ascii', 'ignore')
 
-            if w['url']:
-                url = w['url'].encode('ascii', 'ignore')
-            else:
-                url = None
+    #         if w['url']:
+    #             url = w['url'].encode('ascii', 'ignore')
+    #         else:
+    #             url = None
 
-            #taking out snippet for now
-            if w['snippet']:
-                snippet = w['snippet'].encode('ascii', 'ignore')
-            else:
-                snippet = None
+    #         #taking out snippet for now
+    #         if w['snippet']:
+    #             snippet = w['snippet'].encode('ascii', 'ignore')
+    #         else:
+    #             snippet = None
 
-            article = News(title=title, country_name=country_name, year=y, url=url, snippet=snippet)
-            print article
-            db.session.add(article)
+    #         article = News(title=title, country_name=country_name, year=y, url=url, snippet=snippet)
+    #         print article
+    #         db.session.add(article)
 
-        db.session.commit()
+    #     db.session.commit()
 
-        fetch = News.query.filter(News.country_name == country_name, News.year == y).all()
+    #     fetch = News.query.filter(News.country_name == country_name, News.year == y).all()
 
-        if fetch:
-            for f in fetch:
-                search_results[f.news_id] = {'title': f.title, 'url': f.url, 'snippet': f.snippet}
+    #     if fetch:
+    #         for f in fetch:
+    #             search_results[f.news_id] = {'title': f.title, 'url': f.url, 'snippet': f.snippet}
 
-    else:
-        for a in already_clicked:
-            search_results[a.news_id] = {'title': a.title, 'url': a.url, 'snippet': a.snippet}
+    # else:
+    #     for a in already_clicked:
+    #         search_results[a.news_id] = {'title': a.title, 'url': a.url, 'snippet': a.snippet}
 
-    print "Num of api requests made: %s" % debug
-
-    return jsonify(search_results)
+    # return jsonify(search_results)
 
 
     #test code
-    #return jsonify({'h': y, 'example': index})
+    return jsonify({})
 
 
 
