@@ -120,11 +120,19 @@ def get_polity_data():
         for d in country2_ind:
             data_c2.append(d.polity)
 
-
     #list of objs are sorted by most recent year but we want to start from the earliest year on the graph
     years.reverse()
     data_c1.reverse()
     data_c2.reverse()
+
+    # print years
+    # print len(years)
+
+    for i in range(len(years)):
+        if i % 3 is not 0:
+            years[i] = ''
+
+    print years
 
     #polity_data should store scores for both countries, in the datasets key have an array with two dictionaries of polity scores, one per country
     polity_data = {'labels': years, 'datasets': [{
@@ -189,11 +197,11 @@ def get_gdp_data():
             if c.polity or c.polity == 0:
                 polity_score1 = c.polity
             else:
+                #null scores need to be assigned a number in order to give it a color in scatterplot
                 polity_score1 = 999
             dataset1.append([year1, gdp_per_cap1, polity_score1, 1])
 
     for d in country2_ind:
-        #only add to dataset if there is a gdp data
         if d.gdp_per_cap:
             year2 = d.year
             gdp_per_cap2 = d.gdp_per_cap
