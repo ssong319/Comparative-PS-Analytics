@@ -189,6 +189,9 @@ def get_gdp_data():
     country1_ind = Country.query.get(country1_name).indicators
     country2_ind = Country.query.get(country2_name).indicators
 
+    c1_code = Country.query.get(country1_name).country_code
+    c2_code = Country.query.get(country2_name).country_code
+
     for c in country1_ind:
         #only add to dataset if there is a gdp data
         if c.gdp_per_cap:
@@ -199,7 +202,7 @@ def get_gdp_data():
             else:
                 #null scores need to be assigned a number in order to give it a color in scatterplot
                 polity_score1 = 999
-            dataset1.append([year1, gdp_per_cap1, polity_score1, 1])
+            dataset1.append([year1, gdp_per_cap1, polity_score1, c1_code])
 
     for d in country2_ind:
         if d.gdp_per_cap:
@@ -209,7 +212,7 @@ def get_gdp_data():
                 polity_score2 = d.polity
             else:
                 polity_score2 = 999
-            dataset2.append([year2, gdp_per_cap2, polity_score2, 2])
+            dataset2.append([year2, gdp_per_cap2, polity_score2, c2_code])
 
     countries_gdps[country1_name] = dataset1
     countries_gdps[country2_name] = dataset2
@@ -221,81 +224,78 @@ def get_gdp_data():
 def get_news_data():
     """Get relevant search results given country name and year clicked"""
 
-    # debug = 0
-
-    # #js prop becomes key in request.form dict
-    # #index is a string of "1" or "2"
-    # y = request.form.get('year')
-    # index = request.form.get('country_index')
-    # search_results = {}
+    #js prop becomes key in request.form dict
+    #index is a string of "1" or "2"
+    y = request.form.get('year')
+    #index = request.form.get('country_index')
+    country_code = request.form.get('country_code')
+    search_results = {}
 
     # if index == "1":
     #     country_name = session["first_country"]
     # elif index == "2":
     #     country_name = session["second_country"]
 
-    # key = os.environ['BING_SEARCH_KEY']
-    # #Ex: Brazil in 2015, Argentina in 2015...
-    # topic = country_name + ' in ' + y
-    # search_results['tagline'] = topic
+    country_name = Country.query.filter(Country.country_code == country_code).first().country_name
 
-    # #already_clicked will return an empty list if user has not clicked yet, if user has, will return a list of news obj
-    # already_clicked = News.query.filter(News.country_name == country_name, News.year == y).all()
+    key = os.environ['BING_SEARCH_KEY']
+    #Ex: Brazil in 2015, Argentina in 2008...
+    topic = country_name + ' in ' + y
+    search_results['tagline'] = topic
 
-    # if not already_clicked:
+    #already_clicked will return an empty list if user has not clicked yet, if user has, it will return a list of news obj that can be iterated over and thus no need to do another api call
+    already_clicked = News.query.filter(News.country_name == country_name, News.year == y).all()
 
-    #     debug += 1
+    if not already_clicked:
 
-    #     payload = {'q': topic, 'responseFilter': 'Webpages', 'mkt': 'en-us'}
-    #     headers = {'Ocp-Apim-Subscription-Key': key}
-    #     #'https://api.cognitive.microsoft.com/bing/v5.0/news/search'
-    #     r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/search', params=payload, headers=headers)
+        print 'making api call...'
 
-    #     all_results = r.json()
+        payload = {'q': topic, 'responseFilter': 'Webpages', 'mkt': 'en-us'}
+        headers = {'Ocp-Apim-Subscription-Key': key}
+        #'https://api.cognitive.microsoft.com/bing/v5.0/news/search'
+        r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/search', params=payload, headers=headers)
 
-    #     print all_results
+        all_results = r.json()
 
-    #     #webpages is a list of dicts so w is each dict
-    #     webpages = all_results['webPages']['value']
+        print all_results
 
-    #     for w in webpages:
-    #         title = w['name'].encode('ascii', 'ignore')
+        #webpages is a list of dicts so w is each dict
+        webpages = all_results['webPages']['value']
 
-    #         if w['url']:
-    #             url = w['url'].encode('ascii', 'ignore')
-    #         else:
-    #             url = None
+        for w in webpages:
+            title = w['name'].encode('ascii', 'ignore')
 
-    #         #taking out snippet for now
-    #         if w['snippet']:
-    #             snippet = w['snippet'].encode('ascii', 'ignore')
-    #         else:
-    #             snippet = None
+            if w['url']:
+                url = w['url'].encode('ascii', 'ignore')
+            else:
+                url = None
 
-    #         article = News(title=title, country_name=country_name, year=y, url=url, snippet=snippet)
-    #         print article
-    #         db.session.add(article)
+            if w['snippet']:
+                snippet = w['snippet'].encode('ascii', 'ignore')
+            else:
+                snippet = None
 
-    #     db.session.commit()
+            article = News(title=title, country_name=country_name, year=y, url=url, snippet=snippet)
+            print article
+            db.session.add(article)
 
-    #     fetch = News.query.filter(News.country_name == country_name, News.year == y).all()
+        db.session.commit()
 
-    #     if fetch:
-    #         for f in fetch:
-    #             search_results[f.news_id] = {'title': f.title, 'url': f.url, 'snippet': f.snippet}
+        fetch = News.query.filter(News.country_name == country_name, News.year == y).all()
 
-    # else:
-    #     for a in already_clicked:
-    #         search_results[a.news_id] = {'title': a.title, 'url': a.url, 'snippet': a.snippet}
+        if fetch:
+            for f in fetch:
+                search_results[f.news_id] = {'title': f.title, 'url': f.url, 'snippet': f.snippet}
 
-    # return jsonify(search_results)
+    else:
+        for a in already_clicked:
+            search_results[a.news_id] = {'title': a.title, 'url': a.url, 'snippet': a.snippet}
+
+    return jsonify(search_results)
 
 
     #test code
-    return jsonify({})
-
-
-
+    #return jsonify({})
 
 
 

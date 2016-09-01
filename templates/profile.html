@@ -147,14 +147,16 @@ $.get("/polity-scores.json", function (data) {
 
 
 <script>
-//point is an array like [x, y, color, index] of the data point the user clicked, this comes from the d param in the d3 event handler function.
+//point is an array like [x, y, color, country_code] of the data point the user clicked, this comes from the d param in the d3 event handler function.
 function createNews(point, o) {
-    //index of 1 is the first country, index of 2 is the second country
-    var index = point[3];
+    //customDiv refers to the corresponding news div of the country whose graph the user clicked on
+    var customDiv = point[3].toLowerCase();
+
+    console.log(customDiv);
 
     var params = {
         'year': point[0],
-        'country_index': index
+        'country_code': point[3]
     };
 
     //blocker to limit api requests
@@ -164,27 +166,21 @@ function createNews(point, o) {
     //     }
   
     $.post('/news', params, function(results) {
-        //if o is swapped, meaning the graphs are in reverse order, swap the index accordingly otherwise the search results will be shown in the wrong box
-        if (o == 'swapped' && index == 1) {
-            index = 2;
-        } else if (o == 'swapped' && index == 2) {
-            index = 1;
-        }
+        var newsDiv = $("#" + customDiv);
 
         if (!jQuery.isEmptyObject(results)) {
-          $(".news" + String(index)).empty();
-          $(".news" + String(index)).append("<p>" + results['tagline'] + "</p>");
+          newsDiv.empty();
+          newsDiv.append("<p>" + results['tagline'] + "</p>");
 
           for (var r in results) {
             var content = "<div class='item'> <li> <a href=" + results[r]['url'] + "target='_blank'>" + results[r]['title'] + " </a> </li>"  + "<p>" + results[r]['snippet'] + "</p> </div>";
             //this if stmt is necessary b/c of the tagline prop which doesn't have the above props and thus shows undef
             if (results[r]['title']) {
-                $(".news" + String(index)).append(content);
+                newsDiv.append(content);
             }
           }
         } else {
-            //console.log('test');
-            $(".news" + String(index)).append("<div> <p> Search results not available for this year </p> </div>");
+            newsDiv.append("<div> <p> Search results not available for this year </p> </div>");
         }
     });
 
@@ -198,10 +194,9 @@ function deleteSearchBox(n) {
   d3.json('/gdp.json', function makeScatter(gdp_data) {
     //ref will be used to delete the relevant search box when there is no graph and indicate which div to append to
     var ref = 0;
-    //to account for cases where the 2nd country's graph is shown first, so search results end up in the correct box
-    var orient;  
 
     for (var country in gdp_data) {
+        var dataset = gdp_data[country];
         ref++;
         //title of the graph
         d3.select("#block" + String(ref)).append("p").text(country + " : GDP per capita by year")
@@ -210,17 +205,14 @@ function deleteSearchBox(n) {
         if (gdp_data[country].length <= 1) {
             d3.select("#block" + String(ref)).append("p").text("No data available for this country");
             deleteSearchBox(ref);
-            orient = 'aligned';
         } else {
             var w = 800;
             var h = 400;
             var padding = 50;
-            var dataset = gdp_data[country];
-
-            //check if graph order is swapped and note it if it is. dataset[0][3] should be 2 on the 2nd iter. 
-            if (ref == 2 && dataset[0][3] !== 2 && !orient) {
-                orient = 'swapped';
-            }
+            //idCode is the country code
+            var idCode = dataset[0][3].toLowerCase();
+            //add id name with country code so that search results show up on the correct box
+            d3.select(".news" + String(ref)).attr("id", idCode);
 
             var svg = d3.select("#block" + String(ref)).append("svg")
                         .attr("width", w)
@@ -251,7 +243,7 @@ function deleteSearchBox(n) {
                               .orient("left").ticks(15);
 
             //creating the circles
-            //for event handler funct, d is the data like [x, y, color, c_index]
+            //for event handler funct, d is the data like [x, y, color, country_code]
             svg.selectAll("circle")
                 .data(dataset)
                 .enter()
@@ -261,7 +253,7 @@ function deleteSearchBox(n) {
                 .attr("r", function(d) { return 4; })
                 .style('fill', function(d) { return color(d[2]); } )
                 .on('click', function(d, i) {
-                    createNews(d, orient); 
+                    createNews(d); 
                 });
 
             //creating the axes
