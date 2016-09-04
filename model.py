@@ -29,17 +29,6 @@ class Indicators(db.Model):
         return "<Indicators indicator_id=%s country_name=%s year=%s polity=%s eodb=%s pol_stability=%s gdp_per_cap=%s unemployment=%s> \n" % (self.indicator_id, self.country_name, self.year, self.polity, self.eodb, self.pol_stability, self.gdp_per_cap, self.unemployment)
 
 
-# class Leader(db.Model):
-#     __tablename__ = "leaders"
-
-#     leader_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-#     country_name = db.Column(db.String(50), db.ForeignKey('countries.country_name'))
-#     leader_name = db.Column(db.String(400), nullable=False)
-#     country = db.relationship('Country', backref=db.backref("leaders"))
-
-#     def __repr__(self):
-#         return "<Leader leader_id=%s country_name=%s leader_name=%s> \n" % (self.leader_id, self.country_name, self.leader_name)
-
 class News(db.Model):
     __tablename__ = "news"
 
@@ -47,21 +36,40 @@ class News(db.Model):
     country_name = db.Column(db.String(100), db.ForeignKey('countries.country_name'))
     title = db.Column(db.String(400), nullable=False)
     snippet = db.Column(db.Text(), nullable=True)
-    #date = db.Column(db.String(400), nullable=True)
     url = db.Column(db.Text(), nullable=True)
     year = db.Column(db.String(50), nullable=False)
-    # source = db.Column(db.String(50), nullable=True)
-    # sent_score = db.Column(db.Integer, nullable=True)
     country = db.relationship('Country', backref=db.backref("news"))
 
     def __repr__(self):
         return "<News news_id=%s country_name=%s year=%s title=%s url=%s snippet=%s> \n" % (self.news_id, self.country_name, self.year, self.title, self.url, self.snippet)
 
 
+def fake_data():
+    """Create some example data to use for testing purposes"""
+
+    Country.query.delete()
+    Indicators.query.delete()
+
+    shakespeare = Country(country_name='Shakespeare', country_code='shk')
+    mars = Country(country_name='Mars', country_code='mrs')
+
+    shakespeare_metrics1 = Indicators(country_name='Shakespeare', year=2121, polity=10, gdp_per_cap=500000)
+    shakespeare_metrics2 = Indicators(country_name='Shakespeare', year=2122, polity=10, gdp_per_cap=500001)
+    shakespeare_metrics3 = Indicators(country_name='Shakespeare', year=2123, polity=10, gdp_per_cap=500002)
+
+    mars_metrics1 = Indicators(country_name='Mars', year=2040, polity=-9, gdp_per_cap=400500)
+    mars_metrics2 = Indicators(country_name='Mars', year=2041, polity=-10, gdp_per_cap=400000)
+    mars_metrics3 = Indicators(country_name='Mars', year=2042, polity=-9, gdp_per_cap=400300)
+
+
+    db.session.add_all([shakespeare, mars, shakespeare_metrics1, shakespeare_metrics2, shakespeare_metrics3, mars_metrics1, mars_metrics2, mars_metrics3])
+    db.session.commit()
+
+
 
 ###
-def connect_to_db(app):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///pemetrics'
+def connect_to_db(app, db_uri="postgresql:///pemetrics"):
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     db.app = app
     db.init_app(app)
 

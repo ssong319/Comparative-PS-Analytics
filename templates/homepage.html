@@ -43,9 +43,12 @@
 </form>
 
 <p id='invalid'> Invalid country name(s). Please try again. </p>
+<p id='same'> Please select two different countries. </p>
 
 <script>
+  $('#same').hide();
   $('#invalid').hide();
+
   $('#submit-button').on('click', function (evt) {
     var first_choice = $('#first').val();
     var second_choice = $('#second').val();
@@ -53,6 +56,9 @@
     if (all_country_names.indexOf(first_choice) == -1 || all_country_names.indexOf(second_choice) == -1) {
         evt.preventDefault();
         $('#invalid').show();
+    } else if (first_choice == second_choice) {
+        evt.preventDefault();
+        $('#same').show();
     } else {
         //unbind removes a previously attached event handler
         $('#submit-button').unbind('click').submit();

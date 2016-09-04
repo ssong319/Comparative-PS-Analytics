@@ -76,6 +76,7 @@ def metric_page():
 def get_polity_data():
     """Return polity data for line chart"""
 
+    #using ind shorthand for indicators from here on
     country1_ind = Country.query.get(session["first_country"]).indicators
     country2_ind = Country.query.get(session["second_country"]).indicators
 
@@ -125,14 +126,10 @@ def get_polity_data():
     data_c1.reverse()
     data_c2.reverse()
 
-    # print years
-    # print len(years)
-
+    #chart js puts too many years labels, limit them to make it look more visually appealing
     for i in range(len(years)):
         if i % 3 is not 0:
             years[i] = ''
-
-    print years
 
     #polity_data should store scores for both countries, in the datasets key have an array with two dictionaries of polity scores, one per country
     polity_data = {'labels': years, 'datasets': [{
@@ -177,8 +174,8 @@ def get_polity_data():
 @app.route('/gdp.json')
 def get_gdp_data():
     """Return gdp per cap data with corresponding year and polity score"""
-    #var dataset = [[year, gdp, polity, index], [year, gdp, polity, index]...]
-    #index is not necessary to create the graphs but comes in handy with the news feature later on
+    #var dataset = [[year, gdp, polity, country_code]...]
+    #country_code is not necessary to create the graphs but comes in handy with the news feature later on
     country1_name = session["first_country"]
     country2_name = session["second_country"]
 
@@ -224,22 +221,18 @@ def get_gdp_data():
 def get_news_data():
     """Get relevant search results given country name and year clicked"""
 
+    #test code
+    #return jsonify({})
+
     #js prop becomes key in request.form dict
-    #index is a string of "1" or "2"
     y = request.form.get('year')
-    #index = request.form.get('country_index')
     country_code = request.form.get('country_code')
     search_results = {}
-
-    # if index == "1":
-    #     country_name = session["first_country"]
-    # elif index == "2":
-    #     country_name = session["second_country"]
 
     country_name = Country.query.filter(Country.country_code == country_code).first().country_name
 
     key = os.environ['BING_SEARCH_KEY']
-    #Ex: Brazil in 2015, Argentina in 2008...
+    #Ex topic: Brazil in 2015, Argentina in 2008...
     topic = country_name + ' in ' + y
     search_results['tagline'] = topic
 
@@ -252,7 +245,7 @@ def get_news_data():
 
         payload = {'q': topic, 'responseFilter': 'Webpages', 'mkt': 'en-us'}
         headers = {'Ocp-Apim-Subscription-Key': key}
-        #'https://api.cognitive.microsoft.com/bing/v5.0/news/search'
+
         r = requests.get('https://api.cognitive.microsoft.com/bing/v5.0/search', params=payload, headers=headers)
 
         all_results = r.json()
@@ -292,10 +285,6 @@ def get_news_data():
             search_results[a.news_id] = {'title': a.title, 'url': a.url, 'snippet': a.snippet}
 
     return jsonify(search_results)
-
-
-    #test code
-    #return jsonify({})
 
 
 

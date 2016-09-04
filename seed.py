@@ -3,7 +3,6 @@ import requests
 from model import Country, Indicators, connect_to_db, db
 from server import app
 
-import re
 import os
 import json
 
@@ -57,8 +56,6 @@ def load_gdp():
 
     This function submits a get request to the World Bank for gdp per capita info, fetches the appropriate indicator obj by querying for country name and year, then assigns the gdp per cap value to that obj accordingly
     """
-    #aside: if instead want to create a function that can take any world bank obj can access attr via getattr(object, attrname)
-    #setattr(object, attrname, value) where attrname can be a string that corresponds to the attr
 
     #this api call gets all gdp per cap info for all countries for all available years
     url = 'http://api.worldbank.org/countries/all/indicators/NY.GDP.PCAP.CD?per_page=14784&format=json'
@@ -145,7 +142,36 @@ def load_ease_of_business():
         #this condition is needed since ease_of_business_ranks contains eodb scores for years other than 2015, but we only want the 2015 score
         if e["date"] == "2015":
             year = 2015
-            country_name = e["country"]["value"]
+            if e["country"]["value"] == "Egypt, Arab Rep.":
+                country_name = 'Egypt'
+            elif e["country"]["value"] == "Gambia, The":
+                country_name = 'Gambia'
+            elif e["country"]["value"] == "Iran, Islamic Rep.":
+                country_name = 'Iran'
+            elif e["country"]["value"] == "Cote d'Ivoire":
+                country_name = 'Ivory Coast'
+            elif e["country"]["value"] == "Congo, Rep.":
+                country_name = 'Congo Brazzaville'
+            elif e["country"]["value"] == "Korea, Dem. People's Rep.":
+                country_name = 'North Korea'
+            elif e["country"]["value"] == "Korea, Rep.":
+                country_name = 'South Korea'
+            elif e["country"]["value"] == "Russian Federation":
+                country_name = 'Russia'
+            elif e["country"]["value"] == "Syrian Arab Republic":
+                country_name = 'Syria'
+            elif e["country"]["value"] == "Yemen, Rep.":
+                country_name = 'Yemen'
+            elif e["country"]["value"] == "Congo, Dem. Rep.":
+                country_name = 'Congo Kinshasa'
+            elif e["country"]["value"] == "Lao PDR":
+                country_name = 'Laos'
+            elif e["country"]["value"] == "Macedonia, FYR":
+                country_name = 'Macedonia'
+            elif e["country"]["value"] == "Timor-Leste":
+                country_name = 'East Timor'
+            else:
+                country_name = e["country"]["value"]
 
             if e["value"] is not None:
                 value = int(float(e["value"]))
@@ -187,33 +213,6 @@ def load_pol_stability():
             if fetch:
                 fetch.pol_stability = value
 
-#this funct not working error: ValueError: Unterminated string starting at: line 1 column 1708246 (char 1708245)
-def load_unemployment():
-    """loads long-term unemployment metrics to indicators objects
-
-    This function submit a get request to the World Bank for long-term unemployment (as percentage of total unemployment) metrics, fetches the corresponding indicators object and assigns the metric. This is a time series
-    """
-
-    r = requests.get("http://api.worldbank.org/countries/all/indicators/SL.UEM.LTRM.ZS?format=json&per_page=14784")
-
-    unemployment_info = r.json()
-
-    unemployment_list = unemployment_info[1]
-
-    for u in unemployment_list:
-        country_name = u["country"]["value"]
-        year = int(u["date"])
-
-        if u["value"] is not None:
-            value = float(u["value"])
-
-            fetch = Indicators.query.filter(Indicators.country_name == country_name, Indicators.year == year).first()
-
-            if fetch:
-                fetch.unemployment = value
-
-    db.session.commit()
-
 
 
 
@@ -225,4 +224,3 @@ if __name__ == "__main__":
     load_gdp()
     #load_ease_of_business()
     #load_pol_stability()
-    #load_unemployment()

@@ -25,6 +25,75 @@
     font-size: 11px;
 }
 
+#legend {
+    display: none;
+    flex-direction: row;
+    width: 600px;
+    height: 30px;
+}
+
+.legitem {
+    flex-grow: 1;
+    background-color: green;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+.a10-9 {
+    background-color: rgba(165, 0, 33, 1.0);
+}
+
+.a8-7 {
+    background-color: rgba(216, 38, 50, 1.0);
+}
+
+.a6-5 {
+    background-color: rgba(247, 109, 94, 1.0);
+}
+
+.a4-3 {
+    background-color: rgba(243, 171, 159, 1.0);
+}
+
+.a2-1 {
+    background-color: rgba(244, 214, 209, 1.0);
+}
+
+.n0 {
+    background-color: rgba(219, 190, 248, 1.0);
+}
+
+.d1-2 {
+    background-color: rgba(192, 235, 251, 1.0);
+    flex-grow: 1.5;
+}
+
+.d3-4 {
+    background-color: rgba(114, 217, 255, 1.0);
+    flex-grow: 1.5;
+}
+
+.d5-6 {
+    background-color: rgba(63, 160, 255, 1.0);
+    flex-grow: 1.5;
+}
+
+.d7-8 {
+    background-color: rgba(38, 77, 245, 1.0);
+    flex-grow: 1.5;
+}
+
+.d9-10 {
+    background-color: rgba(41, 10, 216, 1.0);
+    flex-grow: 1.5;
+}
+
+.null {
+    background-color: rgba(235, 236, 161, 1.0);
+}
+
+
 .container {
     display: flex;
     flex-direction: column;
@@ -55,6 +124,14 @@
     overflow: auto;
 }
 
+.waiting {
+    display: none;
+    width: 40px;
+    height: 40px;
+    margin-left: 150px;
+    background: url('/static/ajax-loader.gif')
+    no-repeat;
+}
 
 {% endblock %}
 
@@ -124,14 +201,42 @@ $.get("/polity-scores.json", function (data) {
 
 </script>
 
-<h3>GDP Time Series</h3>
+<h3>Per Capita GDP Time Series</h3>
 <p>Color of the circles indicate the country's polity score for that year. Ranges from red(most authoritarian) to blue(most democratic). Purple indicates a score of 0 and yellow indicates no score. </p>
+
+
+<div id="legend">
+    <div class="legitem a10-9"> -10 </div>
+    <div class="legitem a10-9"> -9 </div> 
+    <div class="legitem a8-7"> -8 </div> 
+    <div class="legitem a8-7"> -7 </div> 
+    <div class="legitem a6-5"> -6 </div> 
+    <div class="legitem a6-5"> -5 </div> 
+    <div class="legitem a4-3"> -4 </div> 
+    <div class="legitem a4-3"> -3 </div> 
+    <div class="legitem a2-1"> -2 </div> 
+    <div class="legitem a2-1"> -1 </div>
+    <div class="legitem n0"> 0 </div>
+    <div class="legitem n0"> </div>
+    <div class="legitem d1-2"> 1 </div> 
+    <div class="legitem d1-2"> 2 </div> 
+    <div class="legitem d3-4"> 3 </div> 
+    <div class="legitem d3-4"> 4 </div> 
+    <div class="legitem d5-6"> 5 </div> 
+    <div class="legitem d5-6"> 6 </div> 
+    <div class="legitem d7-8"> 7 </div> 
+    <div class="legitem d7-8"> 8 </div> 
+    <div class="legitem d9-10"> 9 </div>
+    <div class="legitem d9-10"> 10 </div>
+    <div class="legitem null"> no score</div>
+</div>
 
 
 <div id="block1">
     <div class="container" id="wrapper1">
         <div class="news1">
             <p>Select a circle to see search results for that year.</p>
+            <div class="waiting"></div>
         </div>
     </div>
 </div>
@@ -141,33 +246,41 @@ $.get("/polity-scores.json", function (data) {
     <div class="container" id="wrapper2">
         <div class="news2">
             <p>Select a circle to see search results for that year.</p>
+            <div class="waiting"></div>
         </div>
     </div>
 </div>
 
 
 <script>
+//createNews gets called when the user clicks on a circle in a scatterplot
 //point is an array like [x, y, color, country_code] of the data point the user clicked, this comes from the d param in the d3 event handler function.
-function createNews(point, o) {
-    //customDiv refers to the corresponding news div of the country whose graph the user clicked on
-    var customDiv = point[3].toLowerCase();
-
-    console.log(customDiv);
+function createNews(point) {
+    //ccode is the country code of the circle the user clicked on.
+    var ccode = point[3].toLowerCase();
+    //newsDiv refers to the corresponding news div of the country whose graph the user clicked on
+    var newsDiv = $("#" + ccode);
 
     var params = {
         'year': point[0],
         'country_code': point[3]
     };
 
-    //blocker to limit api requests
+    //blocker in case I want to limit api requests
     // if (params['year'] !== '2015') {
     //         console.log('blocked');
     //         return;
     //     }
+
+    //show waiting animation on search box when the user clicks on a circle
+    $(document).ajaxStart(function(){
+        newsDiv.find('.waiting').show();
+    });
+    $(document).ajaxStop(function(){
+        newsDiv.find('.waiting').hide();
+    });
   
     $.post('/news', params, function(results) {
-        var newsDiv = $("#" + customDiv);
-
         if (!jQuery.isEmptyObject(results)) {
           newsDiv.empty();
           newsDiv.append("<p>" + results['tagline'] + "</p>");
@@ -183,17 +296,22 @@ function createNews(point, o) {
             newsDiv.append("<div> <p> Search results not available for this year </p> </div>");
         }
     });
-
 }
+
 
 function deleteSearchBox(n) {
     $('#wrapper' + String(n)).remove();
 }
 
+function showLegend() {
+    $('#legend').css('display', 'flex');
+}
+
 
   d3.json('/gdp.json', function makeScatter(gdp_data) {
-    //ref will be used to delete the relevant search box when there is no graph and indicate which div to append to
+    //ref will be used as a counter to indicate which div to append the graph to
     var ref = 0;
+    showLegend();
 
     for (var country in gdp_data) {
         var dataset = gdp_data[country];
@@ -211,7 +329,7 @@ function deleteSearchBox(n) {
             var padding = 50;
             //idCode is the country code
             var idCode = dataset[0][3].toLowerCase();
-            //add id name with country code so that search results show up on the correct box
+            //assign country code as id attr value so that search results show up on the correct box
             d3.select(".news" + String(ref)).attr("id", idCode);
 
             var svg = d3.select("#block" + String(ref)).append("svg")
