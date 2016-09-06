@@ -1,0 +1,134 @@
+
+#content {
+  font-family: 'Inconsolata', monospace;
+}
+
+#content {
+    display: inline-block;
+    margin-left: 50px;
+}
+
+#divline {
+    margin-right: 100px;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+#legend {
+    display: none;
+    flex-direction: row;
+    width: 600px;
+    height: 30px;
+}
+
+.legitem {
+    flex-grow: 1;
+    background-color: green;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+.a10-9 {
+    background-color: rgba(165, 0, 33, 1.0);
+}
+
+.a8-7 {
+    background-color: rgba(216, 38, 50, 1.0);
+}
+
+.a6-5 {
+    background-color: rgba(247, 109, 94, 1.0);
+}
+
+.a4-3 {
+    background-color: rgba(243, 171, 159, 1.0);
+}
+
+.a2-1 {
+    background-color: rgba(244, 214, 209, 1.0);
+}
+
+.n0 {
+    background-color: rgba(219, 190, 248, 1.0);
+}
+
+.d1-2 {
+    background-color: rgba(192, 235, 251, 1.0);
+    flex-grow: 1.5;
+}
+
+.d3-4 {
+    background-color: rgba(114, 217, 255, 1.0);
+    flex-grow: 1.5;
+}
+
+.d5-6 {
+    background-color: rgba(63, 160, 255, 1.0);
+    flex-grow: 1.5;
+}
+
+.d7-8 {
+    background-color: rgba(38, 77, 245, 1.0);
+    flex-grow: 1.5;
+}
+
+.d9-10 {
+    background-color: rgba(41, 10, 216, 1.0);
+    flex-grow: 1.5;
+}
+
+.null {
+    background-color: rgba(235, 236, 161, 1.0);
+}
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 370px;
+    height: 100%;
+    max-height: 350px;
+    position: absolute;
+    margin-left: 825px;
+    border: 1px solid orange;
+    justify-content: space-around;
+    padding-left: 10px;
+}
+
+#wrapper1 {
+    margin-top: 30px;
+}
+
+#wrapper2 {
+    margin-top: 20px;
+}
+
+.news1 {
+    overflow: auto;
+}
+
+.news2 {
+    overflow: auto;
+}
+
+.waiting {
+    display: none;
+    z-index: 100;
+    width: 40px;
+    height: 40px;
+    margin-left: 150px;
+    background: url('/static/ajax-loader.gif')
+    no-repeat;
+}
