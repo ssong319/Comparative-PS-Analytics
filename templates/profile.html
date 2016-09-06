@@ -2,15 +2,34 @@
 
 {% block title %} Country Profile {% endblock %}
 
-{% block css %} 
+
+{% block css %}
+
+.countryhead {
+    text-align: center;
+}
 
 #content {
-    display: inline-block;
-    margin-left: 50px;
+  font-family: 'Inconsolata', monospace;
+  display: inline-block;
+  margin-left: 50px;
+}
+
+.mheader {
+    text-align: center;
+}
+
+.subhead {
+    padding-left: 15px;
+}
+
+#metriclink {
+    padding-left: 50px;
 }
 
 #divline {
     margin-right: 100px;
+    margin-left: 30px;
 }
 
 .axis path,
@@ -38,6 +57,11 @@
     text-align: center;
     font-family: sans-serif;
     font-size: 12px;
+}
+
+.label {
+    padding-left: 250px;
+    margin-bottom: -20px;
 }
 
 .a10-9 {
@@ -108,14 +132,6 @@
     padding-left: 10px;
 }
 
-#wrapper1 {
-    margin-top: 30px;
-}
-
-#wrapper2 {
-    margin-top: 20px;
-}
-
 .news1 {
     overflow: auto;
 }
@@ -124,13 +140,39 @@
     overflow: auto;
 }
 
+.topictag {
+    text-align: center;
+    font-weight: bold;
+}
+
+.instruction {
+    margin-bottom: 40px;
+    padding-left: 15px;
+}
+
 .waiting {
     display: none;
+    z-index: 100;
     width: 40px;
     height: 40px;
+    margin-top: -30px;
     margin-left: 150px;
     background: url('/static/ajax-loader.gif')
     no-repeat;
+}
+
+.newstitle {
+    list-style-type: none;
+}
+
+.item {
+    display: flex;
+    flex-direction: column;
+    border: 3px solid #eee;
+    border-radius: 4px;
+    margin-right: 6px;
+    margin-bottom: 5px;
+    padding: 6px 2px 0px 5px;
 }
 
 {% endblock %}
@@ -147,7 +189,7 @@
 
     <div id="content">
     
-    <h1> {{ country }} </h1>
+    <h1 class="countryhead"> {{ country }} </h1>
 
         {% for m in recent_metrics[country] %}
 
@@ -167,9 +209,9 @@
     {% endfor %}
 
 <br><br>
-<a href="/metrics">About these metrics </a>
+<a id="metriclink" href="/metrics">About these metrics </a>
 <br> <br>
-<h3> Polity Time Series </h3>
+<h3 class="mheader"> Polity Time Series </h3>
 
 <div id="divline">
 <canvas id="lineChart" width="425" height="125"></canvas>
@@ -200,12 +242,12 @@ $.get("/polity-scores.json", function (data) {
 });
 
 </script>
+<br>
+<h3 class="mheader">Per Capita GDP Time Series</h3>
+<p class="subhead">Color of the circles indicate the country's polity score for that year. Ranges from red(most authoritarian) to blue(most democratic). Purple indicates a score of 0 and yellow indicates no score. </p>
 
-<h3>Per Capita GDP Time Series</h3>
-<p>Color of the circles indicate the country's polity score for that year. Ranges from red(most authoritarian) to blue(most democratic). Purple indicates a score of 0 and yellow indicates no score. </p>
 
-
-<div id="legend">
+<div id="legend" class="subhead">
     <div class="legitem a10-9"> -10 </div>
     <div class="legitem a10-9"> -9 </div> 
     <div class="legitem a8-7"> -8 </div> 
@@ -230,12 +272,12 @@ $.get("/polity-scores.json", function (data) {
     <div class="legitem d9-10"> 10 </div>
     <div class="legitem null"> no score</div>
 </div>
-
+<br>
 
 <div id="block1">
     <div class="container" id="wrapper1">
         <div class="news1">
-            <p>Select a circle to see search results for that year.</p>
+            <p class="instruction">Select a circle to see search results for that year.</p>
             <div class="waiting"></div>
         </div>
     </div>
@@ -245,7 +287,7 @@ $.get("/polity-scores.json", function (data) {
 <div id="block2">
     <div class="container" id="wrapper2">
         <div class="news2">
-            <p>Select a circle to see search results for that year.</p>
+            <p class="instruction">Select a circle to see search results for that year.</p>
             <div class="waiting"></div>
         </div>
     </div>
@@ -283,10 +325,10 @@ function createNews(point) {
     $.post('/news', params, function(results) {
         if (!jQuery.isEmptyObject(results)) {
           newsDiv.empty();
-          newsDiv.append("<p>" + results['tagline'] + "</p>");
+          newsDiv.append("<p class='topictag'>" + results['tagline'] + "</p>");
 
           for (var r in results) {
-            var content = "<div class='item'> <li> <a href=" + results[r]['url'] + "target='_blank'>" + results[r]['title'] + " </a> </li>"  + "<p>" + results[r]['snippet'] + "</p> </div>";
+            var content = "<div class='item'> <li class='newstitle'> <a href=" + results[r]['url'] + "target='_blank'>" + results[r]['title'] + " </a> </li>"  + "<p>" + results[r]['snippet'] + "</p> </div>";
             //this if stmt is necessary b/c of the tagline prop which doesn't have the above props and thus shows undef
             if (results[r]['title']) {
                 newsDiv.append(content);
@@ -370,6 +412,7 @@ function showLegend() {
                 .attr("cy", function(d) { return yScale(d[1]); })
                 .attr("r", function(d) { return 4; })
                 .style('fill', function(d) { return color(d[2]); } )
+                .on('mouseover', function(d) { d3.select(this).style("cursor", "hand"); })
                 .on('click', function(d, i) {
                     createNews(d); 
                 });

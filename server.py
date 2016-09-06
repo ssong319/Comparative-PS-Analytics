@@ -221,7 +221,7 @@ def get_gdp_data():
 def get_news_data():
     """Get relevant search results given country name and year clicked"""
 
-    #test code
+    # test code
     #return jsonify({})
 
     #js prop becomes key in request.form dict

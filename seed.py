@@ -60,21 +60,8 @@ def load_gdp():
     #this api call gets all gdp per cap info for all countries for all available years
     url = 'http://api.worldbank.org/countries/all/indicators/NY.GDP.PCAP.CD?per_page=14784&format=json'
 
-    #commented this out to use caching instead
-    #r = requests.get(url)
-    #gdp_info = r.json()
-
-    #json.load() can read a file directly, second param in open specifies the mode, r=read, wb=write in binary
-    cache_file = "json_cache"
-    if os.path.isfile(cache_file):
-        with open(cache_file, "r") as f:
-            gdp_info = json.load(f)
-    else:
-        r = requests.get(url)
-        with open(cache_file, "wb") as f:
-            f.write(r.content)
-            gdp_info = r.json()
-
+    r = requests.get(url)
+    gdp_info = r.json()
 
     #gdp_per_cap_list is a list with dicts containing gdp info for each country per year
     gdp_per_cap_list = gdp_info[1]
@@ -214,13 +201,11 @@ def load_pol_stability():
                 fetch.pol_stability = value
 
 
-
-
 if __name__ == "__main__":
     connect_to_db(app)
     db.create_all()
 
     load_country_and_polity()
     load_gdp()
-    #load_ease_of_business()
-    #load_pol_stability()
+    load_ease_of_business()
+    load_pol_stability()
