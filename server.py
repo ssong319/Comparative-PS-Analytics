@@ -64,6 +64,8 @@ def show_profile():
     insert_recent_values(country_one_indicators)
     insert_recent_values(country_two_indicators)
 
+    print recent_metrics
+
     return render_template("profile.html", recent_metrics=recent_metrics, c1=selection_one, c2=selection_two)
 
 @app.route('/metrics')
